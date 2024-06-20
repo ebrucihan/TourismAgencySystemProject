@@ -1,13 +1,12 @@
 package entity;
 
 import java.math.BigDecimal;
+import java.util.StringJoiner;
 
 public class Room {
     private int room_id;
     private int room_hotel_id;
-    private int room_season_id;
-    private int room_p_type_id;
-    private Room.Roomtype roomtype;
+    private Roomtype roomtype;
     private BigDecimal price_adult;
     private BigDecimal price_child;
     private int room_stock;
@@ -18,6 +17,8 @@ public class Room {
     private boolean room_gameconsole;
     private boolean room_safe;
     private boolean room_projector;
+    private Seasontype room_season_type;
+    private Pensiontype room_pension_type;
     private Hotel hotel;
 
     public enum Roomtype {
@@ -27,16 +28,57 @@ public class Room {
         SUITEROOM
     }
 
+    public enum Seasontype {
+        SUMMER("'01/06/2021 - 01/12/2021'"),
+        WINTER("'01/01/2021 - 31/05/2021'");
+
+        private final String dateRange;
+
+        Seasontype(String dateRange) {
+            this.dateRange = dateRange;
+        }
+
+        public String getDateRange() {
+            return dateRange;
+        }
+
+        public static Seasontype fromDateRange(String dateRange) {
+            for (Seasontype season : Seasontype.values()) {
+                if (season.dateRange.equals(dateRange)) {
+                    return season;
+                }
+            }
+            throw new IllegalArgumentException("No enum constant with date range " + dateRange);
+        }
+
+        @Override
+        public String toString() {
+            return new StringJoiner(", ", Seasontype.class.getSimpleName() + "[", "]")
+                    .add("dateRange='" + dateRange + "'")
+                    .toString();
+        }
+    }
+
+
+
+    public enum Pensiontype {
+        ULTRA_HER_SEY_DAHIL,
+        HER_SEY_DAHIL,
+        KAHVALTI,
+        TAM_PANSIYON,
+        YARIM_PANSION,
+        SADECE_YATAK,
+        ALKOL_HARIC_FULL_CREDIT
+    }
+
     public Room() {
     }
 
-    public Room(int room_id, int room_hotel_id, int room_season_id, int room_p_type_id, Roomtype roomtype, BigDecimal price_adult,
+    public Room(int room_id, int room_hotel_id, int room_p_type_id, Roomtype roomtype, BigDecimal price_adult,
                 BigDecimal price_child, int room_stock, int room_bed_count, int room_square_meters, boolean room_tv, boolean room_minibar,
-                boolean room_gameconsole, boolean room_safe, boolean room_projector, Hotel hotel) {
+                boolean room_gameconsole, boolean room_safe, boolean room_projector,Seasontype seasontype,Pensiontype pensiontype, Hotel hotel) {
         this.room_id = room_id;
         this.room_hotel_id = room_hotel_id;
-        this.room_season_id = room_season_id;
-        this.room_p_type_id = room_p_type_id;
         this.roomtype = roomtype;
         this.price_adult = price_adult;
         this.price_child = price_child;
@@ -48,7 +90,25 @@ public class Room {
         this.room_gameconsole = room_gameconsole;
         this.room_safe = room_safe;
         this.room_projector = room_projector;
+        this.room_season_type = seasontype;
+        this.room_pension_type = pensiontype;
         this.hotel = hotel;
+    }
+
+    public Pensiontype getRoom_pension_type() {
+        return room_pension_type;
+    }
+
+    public void setRoom_pension_type(Pensiontype room_pension_type) {
+        this.room_pension_type = room_pension_type;
+    }
+
+    public Seasontype getRoom_season_type() {
+        return room_season_type;
+    }
+
+    public void setRoom_season_type(Seasontype room_season_type) {
+        this.room_season_type = room_season_type;
     }
 
     public int getRoom_id() {
@@ -65,22 +125,6 @@ public class Room {
 
     public void setRoom_hotel_id(int room_hotel_id) {
         this.room_hotel_id = room_hotel_id;
-    }
-
-    public int getRoom_season_id() {
-        return room_season_id;
-    }
-
-    public void setRoom_season_id(int room_season_id) {
-        this.room_season_id = room_season_id;
-    }
-
-    public int getRoom_p_type_id() {
-        return room_p_type_id;
-    }
-
-    public void setRoom_p_type_id(int room_p_type_id) {
-        this.room_p_type_id = room_p_type_id;
     }
 
     public Roomtype getRoomtype() {
@@ -184,8 +228,6 @@ public class Room {
         return "Room{" +
                 "room_id=" + room_id +
                 ", room_hotel_id=" + room_hotel_id +
-                ", room_season_id=" + room_season_id +
-                ", room_p_type_id=" + room_p_type_id +
                 ", roomtype=" + roomtype +
                 ", price_adult=" + price_adult +
                 ", price_child=" + price_child +
@@ -197,6 +239,8 @@ public class Room {
                 ", room_gameconsole=" + room_gameconsole +
                 ", room_safe=" + room_safe +
                 ", room_projector=" + room_projector +
+                ", room_season_type=" + room_season_type +
+                ", room_pension_type=" + room_pension_type +
                 ", hotel=" + hotel +
                 '}';
     }

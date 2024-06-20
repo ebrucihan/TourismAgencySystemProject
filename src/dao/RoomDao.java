@@ -53,8 +53,6 @@ public class RoomDao {
         Room room = new Room();
         room.setRoom_id(rs.getInt("room_id"));
         room.setRoom_hotel_id(rs.getInt("room_hotel_id"));
-        room.setRoom_season_id(rs.getInt("room_season_id"));
-        room.setRoom_p_type_id(rs.getInt("room_p_type_id"));
         room.setRoomtype(Room.Roomtype.valueOf(rs.getString("room_type")));
         room.setPrice_adult(rs.getBigDecimal("price_adult"));
         room.setPrice_child(rs.getBigDecimal("price_child"));
@@ -66,9 +64,20 @@ public class RoomDao {
         room.setRoom_gameconsole(rs.getBoolean("room_gameconsole"));
         room.setRoom_safe(rs.getBoolean("room_safe"));
         room.setRoom_projector(rs.getBoolean("room_projector"));
+        room.setRoom_season_type(Room.Seasontype.valueOf(rs.getString("room_season_type")));
+        room.setRoom_pension_type(Room.Pensiontype.valueOf(rs.getString("room_pension_type")));
         return room;
 
     }
+
+    public ArrayList<Room.Seasontype> getAllSeasons() {
+        ArrayList<Room.Seasontype> seasons = new ArrayList<>();
+        for (Room.Seasontype season : Room.Seasontype.values()) {
+            seasons.add(season);
+        }
+        return seasons;
+    }
+
 }
 
 

@@ -24,8 +24,6 @@ public class RoomManager {
             Object[] rowObject = new Object[size];
             rowObject[i++] = obj.getRoom_id();
             rowObject[i++] = obj.getRoom_hotel_id();
-            rowObject[i++] = obj.getRoom_season_id();
-            rowObject[i++] = obj.getRoom_p_type_id();
             rowObject[i++] = obj.getRoomtype();
             rowObject[i++] = obj.getPrice_adult();
             rowObject[i++] = obj.getPrice_child();
@@ -37,11 +35,16 @@ public class RoomManager {
             rowObject[i++] = obj.getRoom_gameconsole();
             rowObject[i++] = obj.getRoom_safe();
             rowObject[i++] = obj.getRoom_projector();
+            rowObject[i++] = obj.getRoom_season_type();
+            rowObject[i++] = obj.getRoom_pension_type();
             roomList.add(rowObject);
 
         }
         return roomList;
     }
 
+    public ArrayList<Room.Seasontype> getAllSeasons() {
+        return roomDao.getAllSeasons();
+    }
 
 }

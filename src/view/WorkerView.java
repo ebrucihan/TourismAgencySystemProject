@@ -48,7 +48,7 @@ public class WorkerView extends Layout {
     private JTable tbl_room;
     private JTextField txt_room_stock;
     private JTextField txt_room_price_adult;
-    private JTextField ttxt_room_price_child;
+    private JTextField txt_room_price_child;
     private JTextField txt_room_bed_count;
     private JTextField txt_room_metre;
     private JCheckBox chk_room_tv_yes;
@@ -61,7 +61,7 @@ public class WorkerView extends Layout {
     private JCheckBox chk_room_safe_no;
     private JCheckBox chk_room_projeks_yes;
     private JCheckBox chk_room_projeks_no;
-    private JComboBox <Room.Roomtype> cmb_room_type;
+    private JComboBox<Room.Roomtype> cmb_room_type;
     private JButton btn_room_reset;
     private JButton btn_room_update;
     private JButton btn_room_delete;
@@ -73,7 +73,9 @@ public class WorkerView extends Layout {
     private JButton btn_room_search;
     private JTextField txt_room_ıd_rezerve;
     private JButton btn_room_rerzerve;
-    private JComboBox cmb_season_type;
+    private JComboBox<Room.Seasontype> cmb_season_type;
+    private JComboBox<Hotel> cmb_room_hoteladd;
+    private JComboBox<Room.Pensiontype> cmb_room_pension_type;
     private DefaultTableModel tmdl_hotel = new DefaultTableModel();
     private DefaultTableModel tmdl_room = new DefaultTableModel();
     private Object[] col_hotel;
@@ -101,8 +103,14 @@ public class WorkerView extends Layout {
         // Add ListSelectionListener to the table
         tableHotelRowSelected(tbl_hotel, this::loadHotelCompenent);
 
-
+        //Room
+        loadRoomCompenent();
+        initializeComboBoxes();
         loadRoomTable(null);
+        tableHotelRowSelected(tbl_room, this::loadRoomCompenent);
+
+        this.tbl_hotel.setComponentPopupMenu(hotel_menu);
+        this.tbl_room.setComponentPopupMenu(room_menu);
 
 
         btn_reset.addActionListener(new ActionListener() {
@@ -111,6 +119,7 @@ public class WorkerView extends Layout {
                 resetFormFields();
 
             }
+
             private void resetFormFields() {
                 // Text alanlarını temizle
                 txt_hotel_name.setText("");
@@ -168,6 +177,149 @@ public class WorkerView extends Layout {
         }
     }
 
+
+
+
+    public void loadRoomCompenent() {
+        int selectedRow = tbl_room.getSelectedRow();
+        if (selectedRow != -1) {
+
+
+            // Room type
+            String roomTypeStr = tbl_room.getValueAt(selectedRow, 2).toString().toUpperCase().replaceAll(" ", "");
+            Room.Roomtype roomType = Room.Roomtype.valueOf(roomTypeStr);
+            cmb_room_type.setSelectedItem(roomType);
+
+            // Prices and other fields
+            txt_room_price_adult.setText(tbl_room.getValueAt(selectedRow, 3).toString());
+            txt_room_price_child.setText(tbl_room.getValueAt(selectedRow, 4).toString());
+            txt_room_stock.setText(tbl_room.getValueAt(selectedRow, 5).toString());
+            txt_room_bed_count.setText(tbl_room.getValueAt(selectedRow, 6).toString());
+            txt_room_metre.setText(tbl_room.getValueAt(selectedRow, 7).toString());
+
+            // Checkbox values
+            chk_room_tv_yes.setSelected((Boolean) tbl_room.getValueAt(selectedRow, 8));
+            chk_room_tv_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 8));
+
+            chk_room_minibar_yes.setSelected((Boolean) tbl_room.getValueAt(selectedRow, 9));
+            chk_room_minibar_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 9));
+
+            chk_room_game_yes.setSelected((Boolean) tbl_room.getValueAt(selectedRow, 10));
+            chk_room_game_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 10));
+
+            chk_room_safe_yes.setSelected((Boolean) tbl_room.getValueAt(selectedRow, 11));
+            chk_room_safe_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 11));
+
+            chk_room_projeks_yes.setSelected((Boolean) tbl_room.getValueAt(selectedRow, 12));
+            chk_room_projeks_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 12));
+
+
+
+            // Season type
+            cmb_season_type.removeAllItems();
+            ArrayList<Room.Seasontype> seasons = roomManager.getAllSeasons();
+            for (Room.Seasontype season : seasons) {
+                cmb_season_type.addItem(season);
+            }
+
+            // Pension type
+            String pensionTypeStr = tbl_room.getValueAt(selectedRow, 14).toString().toUpperCase().replaceAll(" ", "");
+            Room.Pensiontype pensionType = Room.Pensiontype.valueOf(pensionTypeStr);
+            cmb_room_pension_type.setSelectedItem(pensionType);
+
+
+
+            // Set room ID
+            int roomId = Integer.parseInt(tbl_room.getValueAt(selectedRow, 0).toString());
+
+
+        }
+
+        // Checkbox action listeners
+        chk_room_tv_yes.addActionListener(e -> {
+            if (chk_room_tv_yes.isSelected()) {
+                chk_room_tv_no.setSelected(false);
+            }
+        });
+
+        chk_room_tv_no.addActionListener(e -> {
+            if (chk_room_tv_no.isSelected()) {
+                chk_room_tv_yes.setSelected(false);
+            }
+        });
+
+        chk_room_minibar_yes.addActionListener(e -> {
+            if (chk_room_minibar_yes.isSelected()) {
+                chk_room_minibar_no.setSelected(false);
+            }
+        });
+
+        chk_room_minibar_no.addActionListener(e -> {
+            if (chk_room_minibar_no.isSelected()) {
+                chk_room_minibar_yes.setSelected(false);
+            }
+        });
+
+        chk_room_game_yes.addActionListener(e -> {
+            if (chk_room_game_yes.isSelected()) {
+                chk_room_game_no.setSelected(false);
+            }
+        });
+
+        chk_room_game_no.addActionListener(e -> {
+            if (chk_room_game_no.isSelected()) {
+                chk_room_game_yes.setSelected(false);
+            }
+        });
+
+        chk_room_safe_yes.addActionListener(e -> {
+            if (chk_room_safe_yes.isSelected()) {
+                chk_room_safe_no.setSelected(false);
+            }
+        });
+
+        chk_room_safe_no.addActionListener(e -> {
+            if (chk_room_safe_no.isSelected()) {
+                chk_room_safe_yes.setSelected(false);
+            }
+        });
+
+        chk_room_projeks_yes.addActionListener(e -> {
+            if (chk_room_projeks_yes.isSelected()) {
+                chk_room_projeks_no.setSelected(false);
+            }
+
+
+        });
+
+        chk_room_projeks_no.addActionListener(e -> {
+            if (chk_room_projeks_no.isSelected()) {
+                chk_room_projeks_yes.setSelected(false);
+            }
+        });
+
+
+    }
+
+    private void initializeComboBoxes() {
+        // Room Type ComboBox
+        for (Room.Roomtype roomType : Room.Roomtype.values()) {
+            cmb_room_type.addItem(roomType);
+        }
+
+        // Season Type ComboBox
+        for (Room.Seasontype seasonType : Room.Seasontype.values()) {
+            cmb_season_type.addItem(seasonType);
+        }
+
+        // Pension Type ComboBox
+        for (Room.Pensiontype pensionType : Room.Pensiontype.values()) {
+            cmb_room_pension_type.addItem(pensionType);
+        }
+    }
+
+
+
     private void loadFacilityAndPension(int hotelId) {
         Hotel hotel = hotelManager.getHotelById(hotelId);
         if (hotel != null) {
@@ -210,8 +362,7 @@ public class WorkerView extends Layout {
 
 
     public void loadRoomTable(ArrayList<Object[]> roomList){
-        this.col_room = new Object[]{"Room ID", "Room Hotel ID", "Room Season ID",
-                "Room Pension ID", "Room Type", "Price Adult", "Price Child", "Room Stock", "Room Bed Count", "Room Square Meters", "Room Tv", "Room Minibar", "Room Gameconsole", "Room Safe", "Room Projector"};
+        this.col_room = new Object[]{"Room ID", "Room Hotel ID", "Room Type", "Price Adult", "Price Child", "Room Stock", "Room Bed Count", "Room Square Meters", "Room Tv", "Room Minibar", "Room Gameconsole", "Room Safe", "Room Projector","Room Season Type","Room Pension Type"};
         if (roomList == null) {
             roomList = this.roomManager.getForTableRoom(this.col_room.length,this.roomManager.findAll());
         }
@@ -337,5 +488,6 @@ public class WorkerView extends Layout {
         hotelManager.addPension(pension);
         return pension;
     }
+
 
 }
