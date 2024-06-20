@@ -17,6 +17,22 @@ public class RoomManager {
         return this.roomDao.findAll();
     }
 
+    public boolean addRoom(Room room) {
+        return roomDao.addRoom(room);
+    }
+
+    public Room getRoomById(int roomId) {
+        return roomDao.findById(roomId);
+    }
+
+    public boolean updateRoom(Room room) {
+        return roomDao.update(room);
+    }
+
+    public void deleteRoom(int roomId) {
+        roomDao.delete(roomId);
+    }
+
     public ArrayList<Object[]> getForTableRoom(int size, ArrayList<Room> rooms) {
         ArrayList<Object[]> roomList = new ArrayList<>();
         for (Room obj : rooms) {
@@ -45,6 +61,10 @@ public class RoomManager {
 
     public ArrayList<Room.Seasontype> getAllSeasons() {
         return roomDao.getAllSeasons();
+    }
+
+    public ArrayList<Hotel> getAllHotels() {
+        return roomDao.getAllHotels();
     }
 
 }

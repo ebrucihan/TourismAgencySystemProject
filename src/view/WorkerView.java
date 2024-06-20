@@ -66,8 +66,6 @@ public class WorkerView extends Layout {
     private JButton btn_room_update;
     private JButton btn_room_delete;
     private JButton btn_room_add;
-    private JTextField txt_room_hotelname;
-    private JTextField txt_room_city;
     private JFormattedTextField room_strt_date;
     private JFormattedTextField rıoom_fnsh_date;
     private JButton btn_room_search;
@@ -76,6 +74,8 @@ public class WorkerView extends Layout {
     private JComboBox<Room.Seasontype> cmb_season_type;
     private JComboBox<Hotel> cmb_room_hoteladd;
     private JComboBox<Room.Pensiontype> cmb_room_pension_type;
+    private JComboBox cmb_search_hotel_name;
+    private JComboBox cmb_search_city;
     private DefaultTableModel tmdl_hotel = new DefaultTableModel();
     private DefaultTableModel tmdl_room = new DefaultTableModel();
     private Object[] col_hotel;
@@ -95,7 +95,7 @@ public class WorkerView extends Layout {
         this.hotelManager = new HotelManager();
         this.roomManager = new RoomManager();
         this.add(container);
-        this.guiInitilaze(1200, 700);
+        this.guiInitilaze(1200, 850);
         this.setTitle("Turizm Acentesi");
 
         loadCompenent();
@@ -106,11 +106,14 @@ public class WorkerView extends Layout {
         //Room
         loadRoomCompenent();
         initializeComboBoxes();
+        loadRoomButton();
         loadRoomTable(null);
         tableHotelRowSelected(tbl_room, this::loadRoomCompenent);
 
         this.tbl_hotel.setComponentPopupMenu(hotel_menu);
         this.tbl_room.setComponentPopupMenu(room_menu);
+
+
 
 
         btn_reset.addActionListener(new ActionListener() {
@@ -157,6 +160,7 @@ public class WorkerView extends Layout {
 
 
         });
+
     }
 
 
@@ -177,14 +181,9 @@ public class WorkerView extends Layout {
         }
     }
 
-
-
-
     public void loadRoomCompenent() {
         int selectedRow = tbl_room.getSelectedRow();
         if (selectedRow != -1) {
-
-
             // Room type
             String roomTypeStr = tbl_room.getValueAt(selectedRow, 2).toString().toUpperCase().replaceAll(" ", "");
             Room.Roomtype roomType = Room.Roomtype.valueOf(roomTypeStr);
@@ -214,6 +213,14 @@ public class WorkerView extends Layout {
             chk_room_projeks_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 12));
 
 
+            int hotelId = (int) tbl_room.getValueAt(selectedRow, 1);
+            for (int i = 0; i < cmb_room_hoteladd.getItemCount(); i++) {
+                Hotel hotel = (Hotel) cmb_room_hoteladd.getItemAt(i);
+                if (hotel.getHotel_id() == hotelId) {
+                    cmb_room_hoteladd.setSelectedItem(hotel);
+                    break;
+                }
+            }
 
             // Season type
             cmb_season_type.removeAllItems();
@@ -300,8 +307,12 @@ public class WorkerView extends Layout {
 
 
     }
-
     private void initializeComboBoxes() {
+        cmb_room_hoteladd.removeAllItems();
+        ArrayList<Hotel> hotels = roomManager.getAllHotels();
+        for (Hotel hotel : hotels) {
+            cmb_room_hoteladd.addItem(hotel);
+        }
         // Room Type ComboBox
         for (Room.Roomtype roomType : Room.Roomtype.values()) {
             cmb_room_type.addItem(roomType);
@@ -316,10 +327,131 @@ public class WorkerView extends Layout {
         for (Room.Pensiontype pensionType : Room.Pensiontype.values()) {
             cmb_room_pension_type.addItem(pensionType);
         }
+
+
     }
 
+    private void loadRoomButton(){
+        this.btn_room_add.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                if (Helper.confirm("Emin misiniz?")) {
+                    Room.Seasontype room_season = (Room.Seasontype) cmb_season_type.getSelectedItem();
+                    Room.Roomtype room_type = (Room.Roomtype) cmb_room_type.getSelectedItem();
+                    Room.Pensiontype room_pension = (Room.Pensiontype) cmb_room_pension_type.getSelectedItem();
+
+                    double room_price_adult = Double.parseDouble(txt_room_price_adult.getText());
+                    double room_price_child = Double.parseDouble(txt_room_price_child.getText());
+                    int room_stock = Integer.parseInt(txt_room_stock.getText());
+                    int room_bed_count = Integer.parseInt(txt_room_bed_count.getText());
+                    int room_size = Integer.parseInt(txt_room_metre.getText());
+                    boolean room_has_tv = chk_room_tv_yes.isSelected();
+                    boolean room_has_minibar = chk_room_minibar_yes.isSelected();
+                    boolean room_has_console = chk_room_game_yes.isSelected();
+                    boolean room_has_safe = chk_room_safe_yes.isSelected();
+                    boolean room_has_projector = chk_room_projeks_yes.isSelected();
+
+                    Hotel selectedHotel = (Hotel) cmb_room_hoteladd.getSelectedItem();
+                    int hotel_id = selectedHotel.getHotel_id();
+
+                    Room room = new Room(0, hotel_id, room_type, room_season, room_pension,
+                            room_price_adult, room_price_child, room_stock, room_bed_count,
+                            room_size, room_has_tv, room_has_minibar, room_has_console,
+                            room_has_safe, room_has_projector);
+
+                    boolean success = roomManager.addRoom(room);
+
+                    if (success) {
+                        loadRoomTable(null);
+                        Helper.showMsg("done");
+                    } else {
+                        Helper.showMsg("error");
+                    }
+
+                }
+            }
+        });
+        btn_room_reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                txt_room_bed_count.setText("");
+                txt_room_metre.setText("");
+                txt_room_price_adult.setText("");
+                txt_room_price_child.setText("");
+                txt_room_stock.setText("");
+                chk_room_tv_yes.setSelected(false);
+                chk_room_tv_no.setSelected(false);
+                chk_room_minibar_yes.setSelected(false);
+                chk_room_minibar_no.setSelected(false);
+                chk_room_game_yes.setSelected(false);
+                chk_room_game_no.setSelected(false);
+                chk_room_safe_yes.setSelected(false);
+                chk_room_safe_no.setSelected(false);
+                chk_room_projeks_yes.setSelected(false);
+                chk_room_projeks_no.setSelected(false);
+                cmb_room_type.setSelectedItem(null);
+                cmb_season_type.setSelectedItem(null);
+                cmb_room_hoteladd.setSelectedItem(null);
+                cmb_room_pension_type.setSelectedItem(null);
+            }
+        });
+        btn_room_update.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tbl_room.getSelectedRow();
+                if (selectedRow != -1) {
+                    int roomId = Integer.parseInt(tbl_room.getValueAt(selectedRow, 0).toString());
+                    Room room = roomManager.getRoomById(roomId);
+                    room.setRoom_season_type((Room.Seasontype) cmb_season_type.getSelectedItem());
+                    room.setRoomtype((Room.Roomtype) cmb_room_type.getSelectedItem());
+                    room.setRoom_pension_type((Room.Pensiontype) cmb_room_pension_type.getSelectedItem());
+                    room.setPrice_adult(Double.parseDouble(txt_room_price_adult.getText()));
+                    room.setPrice_child(Double.parseDouble(txt_room_price_child.getText()));
+                    room.setRoom_stock(Integer.parseInt(txt_room_stock.getText()));
+                    room.setRoom_bed_count(Integer.parseInt(txt_room_bed_count.getText()));
+                    room.setRoom_square_meters(Integer.parseInt(txt_room_metre.getText()));
+                    room.setRoom_tv(chk_room_tv_yes.isSelected());
+                    room.setRoom_minibar(chk_room_minibar_yes.isSelected());
+                    room.setRoom_gameconsole(chk_room_game_yes.isSelected());
+                    room.setRoom_safe(chk_room_safe_yes.isSelected());
+                    room.setRoom_projector(chk_room_projeks_yes.isSelected());
+
+                    Hotel selectedHotel = (Hotel) cmb_room_hoteladd.getSelectedItem();
+                    int hotel_id = selectedHotel.getHotel_id();
+                    room.setRoom_hotel_id(hotel_id);
+
+                    boolean success = roomManager.updateRoom(room);
+
+                    if (success) {
+                        loadRoomTable(null);
+                        Helper.showMsg("done");
+                    } else {
+                        Helper.showMsg("error");
+                    }
+                }
 
 
+
+            }
+        });
+        btn_room_delete.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedRow = tbl_room.getSelectedRow();
+                if (selectedRow != -1 && Helper.confirm("Emin misiniz?")) {
+                    int roomId = (int) tbl_room.getValueAt(selectedRow, 0);
+                    roomManager.deleteRoom(roomId);
+                    loadRoomTable(null);
+                    Helper.showMsg("done");
+                }
+
+            }
+        });
+
+
+
+
+    }
     private void loadFacilityAndPension(int hotelId) {
         Hotel hotel = hotelManager.getHotelById(hotelId);
         if (hotel != null) {

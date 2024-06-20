@@ -50,6 +50,11 @@ public class Hotel {
     public Hotel() {
     }
 
+    public Hotel(int hotelId, String hotelName) {
+        this.hotel_id = hotelId;
+        this.hotel_name = hotelName;
+    }
+
     public int getHotel_id() {
         return hotel_id;
     }
@@ -148,6 +153,10 @@ public class Hotel {
 
     @Override
     public String toString() {
+        return hotel_name; //
+    }
+
+    public String toDetailString() {
         return new StringJoiner(", ", Hotel.class.getSimpleName() + "[", "]")
                 .add("hotel_id=" + hotel_id)
                 .add("hotel_name='" + hotel_name + "'")
@@ -163,4 +172,12 @@ public class Hotel {
                 .add("pension=" + pension)
                 .toString();
     }
-}
+
+    }
+
+
+
+
+
+
+
