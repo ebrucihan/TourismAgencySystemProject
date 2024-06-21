@@ -1,6 +1,7 @@
 package entity;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.StringJoiner;
 
 public class Room {
@@ -54,12 +55,11 @@ public class Room {
 
         @Override
         public String toString() {
-            return new StringJoiner(", ", Seasontype.class.getSimpleName() + "[", "]")
-                    .add("dateRange='" + dateRange + "'")
+            return new StringJoiner(", ",  "[", "]")
+                    .add("'" + dateRange + "'")
                     .toString();
         }
     }
-
 
 
     public enum Pensiontype {
@@ -72,8 +72,12 @@ public class Room {
         ALKOL_HARIC_FULL_CREDIT
     }
 
+
     public Room() {
     }
+
+
+
 
     public Room (int room_id, int room_hotel_id, Roomtype roomtype, Seasontype room_season_type, Pensiontype room_pension_type,
                 double price_adult, double price_child, int room_stock, int room_bed_count,

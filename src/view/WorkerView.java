@@ -1,15 +1,23 @@
 package view;
 
 import business.HotelManager;
+import business.ReservationManager;
 import business.RoomManager;
 import core.Helper;
 import entity.*;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import javax.swing.text.MaskFormatter;
+import java.awt.event.*;
+import java.text.ParseException;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 
 public class WorkerView extends Layout {
 
@@ -69,21 +77,25 @@ public class WorkerView extends Layout {
     private JFormattedTextField room_strt_date;
     private JFormattedTextField rıoom_fnsh_date;
     private JButton btn_room_search;
-    private JTextField txt_room_ıd_rezerve;
-    private JButton btn_room_rerzerve;
     private JComboBox<Room.Seasontype> cmb_season_type;
     private JComboBox<Hotel> cmb_room_hoteladd;
     private JComboBox<Room.Pensiontype> cmb_room_pension_type;
     private JComboBox cmb_search_hotel_name;
     private JComboBox cmb_search_city;
+    private JButton btn_search_reset;
+    private JTable tbl_reservation;
     private DefaultTableModel tmdl_hotel = new DefaultTableModel();
     private DefaultTableModel tmdl_room = new DefaultTableModel();
+    private DefaultTableModel tmdl_reservation = new DefaultTableModel();
     private Object[] col_hotel;
     private Object[] col_room;
+    private Object[] col_reservation;
     private JPopupMenu hotel_menu;
     private JPopupMenu room_menu;
+    private JPopupMenu reservation_menu;
     private HotelManager hotelManager;
     private RoomManager roomManager;
+    private ReservationManager reservationManager;
     private Pension pension;
     private Facility facility;
     private int facilityType;
@@ -94,6 +106,7 @@ public class WorkerView extends Layout {
         this.user = user;
         this.hotelManager = new HotelManager();
         this.roomManager = new RoomManager();
+        this.reservationManager = new ReservationManager();
         this.add(container);
         this.guiInitilaze(1200, 850);
         this.setTitle("Turizm Acentesi");
@@ -109,57 +122,18 @@ public class WorkerView extends Layout {
         loadRoomButton();
         loadRoomTable(null);
         tableHotelRowSelected(tbl_room, this::loadRoomCompenent);
+        resetRoom();
+        roomSearchReset();
+
+        //Rezervasyon
+        loadReservationComponent();
+        loadReservationRightClick();
+        loadReservationTable(null);
 
         this.tbl_hotel.setComponentPopupMenu(hotel_menu);
         this.tbl_room.setComponentPopupMenu(room_menu);
+        this.tbl_reservation.setComponentPopupMenu(reservation_menu);
 
-
-
-
-        btn_reset.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                resetFormFields();
-
-            }
-
-            private void resetFormFields() {
-                // Text alanlarını temizle
-                txt_hotel_name.setText("");
-                txt_hotel_adres.setText("");
-                txt_hotel_city.setText("");
-                txt_hotel_mail.setText("");
-                txt_hotel_region.setText("");
-                txt_hotel_mpno.setText("");
-                txt_hotel_star.setText("");
-
-                resetPensionCheckboxes();
-
-                // Tesis özelliklerini temizle
-                chk_facility_park.setSelected(false);
-                chk_facility_wifi.setSelected(false);
-                chk_facility_pool.setSelected(false);
-                chk_facility_gym.setSelected(false);
-                chk_facility_hc.setSelected(false);
-                chk_facility_spa.setSelected(false);
-                chk_facility_room_service.setSelected(false);
-
-                loadHotelTable(null);
-
-            }
-
-            private void resetPensionCheckboxes() {
-                chk_tp.setSelected(false);
-                chk_yp.setSelected(false);
-                chk_just_bed.setSelected(false);
-                chk_ahfc.setSelected(false);
-                chk_hsd.setSelected(false);
-                chk_breakfast.setSelected(false);
-                chk_uhsd.setSelected(false);
-            }
-
-
-        });
 
     }
 
@@ -235,7 +209,6 @@ public class WorkerView extends Layout {
             cmb_room_pension_type.setSelectedItem(pensionType);
 
 
-
             // Set room ID
             int roomId = Integer.parseInt(tbl_room.getValueAt(selectedRow, 0).toString());
 
@@ -307,12 +280,28 @@ public class WorkerView extends Layout {
 
 
     }
+
     private void initializeComboBoxes() {
         cmb_room_hoteladd.removeAllItems();
         ArrayList<Hotel> hotels = roomManager.getAllHotels();
         for (Hotel hotel : hotels) {
             cmb_room_hoteladd.addItem(hotel);
+            cmb_search_hotel_name.addItem(hotel);
         }
+
+        cmb_search_hotel_name.addItemListener(new ItemListener() {
+            @Override
+            public void itemStateChanged(ItemEvent e) {
+                if (e.getStateChange() == ItemEvent.SELECTED) {
+                    Hotel selectedHotel = (Hotel) cmb_search_hotel_name.getSelectedItem();
+                    if (selectedHotel != null) {
+                        initializeHotelCityComboBox(selectedHotel.getHotel_id());
+                    }
+                }
+            }
+        });
+
+
         // Room Type ComboBox
         for (Room.Roomtype roomType : Room.Roomtype.values()) {
             cmb_room_type.addItem(roomType);
@@ -331,7 +320,113 @@ public class WorkerView extends Layout {
 
     }
 
-    private void loadRoomButton(){
+    private void initializeHotelCityComboBox(int hotelId) {
+        cmb_search_city.removeAllItems();
+        ArrayList<String> cities = roomManager.getHotelCities(hotelId);
+        for (String city : cities) {
+            cmb_search_city.addItem(city);
+        }
+    }
+
+    public void loadReservationRightClick() {
+        this.reservation_menu = new JPopupMenu(); // Burada reservation_menu nesnesini oluşturuyoruz.
+
+        this.tbl_reservation.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int selectedRow = tbl_reservation.rowAtPoint(e.getPoint());
+                tbl_reservation.setRowSelectionInterval(selectedRow, selectedRow);
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    reservation_menu.show(tbl_reservation, e.getX(), e.getY());
+                }
+            }
+        });
+
+        this.reservation_menu.add("Rezervasyon Güncelle").addActionListener(e -> {
+            int selectReservationId = getTableSelectedRow(tbl_reservation, 0);
+            Reservation selectedReservation = reservationManager.getReservationById(selectReservationId);
+
+            if (selectedReservation == null) {
+                Helper.showMsg("error");
+                return;
+            }
+
+            Room selectedRoom = roomManager.getRoomById(selectedReservation.getReservation_room_id());
+            if (selectedRoom == null) {
+                Helper.showMsg("error");
+                return;
+            }
+
+            Hotel selectedHotel = hotelManager.getHotelById(selectedRoom.getRoom_hotel_id());
+            if (selectedHotel == null) {
+                Helper.showMsg("error");
+                return;
+            }
+
+            Date checkInDate = selectedReservation.getReservation_check_in_date();
+            Date checkOutDate = selectedReservation.getReservation_check_out_date();
+
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(checkInDate);
+            LocalDate startDate = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
+
+            calendar.setTime(checkOutDate);
+            LocalDate endDate = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
+
+            ReservationView reservationView = new ReservationView(selectedHotel, selectedRoom, startDate, endDate);
+            reservationView.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    loadReservationTable(null);
+                }
+            });
+            reservationView.setVisible(true);
+        });
+
+        this.reservation_menu.add("Rezervasyon Sil").addActionListener(e -> {
+            int selectReservationId = getTableSelectedRow(tbl_reservation, 0);
+            Reservation selectedReservation = reservationManager.getReservationById(selectReservationId);
+
+            if (selectedReservation == null) {
+                Helper.showMsg("error");
+                return;
+            }
+
+            Room selectedRoom = roomManager.getRoomById(selectedReservation.getReservation_room_id());
+            if (selectedRoom == null) {
+                Helper.showMsg("error");
+                return;
+            }
+
+            if (Helper.confirm("sure")) {
+                reservationManager.deleteReservation(selectReservationId);
+
+                // Oda stok sayısını güncelle
+                int newStock = selectedRoom.getRoom_stock() + 1;
+                reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock);
+
+                loadReservationTable(null);
+                loadRoomTable(null);
+            }
+        });
+
+        this.tbl_reservation.setComponentPopupMenu(reservation_menu);
+        tableRowSelected(this.tbl_reservation, reservation_menu);
+    }
+
+    private void tableRowSelected(JTable tblReservation, JPopupMenu reservationMenu) {
+        // Implement this method if needed
+    }
+
+    private LocalDate convertToLocalDateViaSqlDate(Date date) {
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(date);
+        return LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
+    }
+
+
+
+    private void loadRoomButton() {
         this.btn_room_add.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -374,25 +469,7 @@ public class WorkerView extends Layout {
         btn_room_reset.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                txt_room_bed_count.setText("");
-                txt_room_metre.setText("");
-                txt_room_price_adult.setText("");
-                txt_room_price_child.setText("");
-                txt_room_stock.setText("");
-                chk_room_tv_yes.setSelected(false);
-                chk_room_tv_no.setSelected(false);
-                chk_room_minibar_yes.setSelected(false);
-                chk_room_minibar_no.setSelected(false);
-                chk_room_game_yes.setSelected(false);
-                chk_room_game_no.setSelected(false);
-                chk_room_safe_yes.setSelected(false);
-                chk_room_safe_no.setSelected(false);
-                chk_room_projeks_yes.setSelected(false);
-                chk_room_projeks_no.setSelected(false);
-                cmb_room_type.setSelectedItem(null);
-                cmb_season_type.setSelectedItem(null);
-                cmb_room_hoteladd.setSelectedItem(null);
-                cmb_room_pension_type.setSelectedItem(null);
+                resetRoom();
             }
         });
         btn_room_update.addActionListener(new ActionListener() {
@@ -431,7 +508,6 @@ public class WorkerView extends Layout {
                 }
 
 
-
             }
         });
         btn_room_delete.addActionListener(new ActionListener() {
@@ -446,12 +522,169 @@ public class WorkerView extends Layout {
                 }
 
             }
+
+
         });
 
 
+        btn_room_search.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String startDate = room_strt_date.getText();
+                String endDate = rıoom_fnsh_date.getText();
+
+                DateTimeFormatter inputFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+                DateTimeFormatter outputFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+                try {
+                    LocalDate startLocalDate = LocalDate.parse(startDate, inputFormatter);
+                    LocalDate endLocalDate = LocalDate.parse(endDate, inputFormatter);
+
+                    String formattedStartDate = startLocalDate.format(outputFormatter);
+                    String formattedEndDate = endLocalDate.format(outputFormatter);
+
+                    // cmb_room_search_otel_name combobox'ından seçilen Hotel nesnesini al
+                    Hotel selectedHotel = (Hotel) cmb_search_hotel_name.getSelectedItem();
+                    String hotelName = selectedHotel != null ? selectedHotel.getHotel_name() : null;
+
+                    // Şehir combobox'ından seçilen şehir adını al
+                    String city = (String) cmb_search_city.getSelectedItem();
+
+                    ArrayList<Room> rooms = roomManager.searchRooms(formattedStartDate, formattedEndDate, city, hotelName);
+                    ArrayList<Object[]> roomData = roomManager.getForTableRoom(col_room.length, rooms);
+                    loadRoomTable(roomData);
+                } catch (DateTimeParseException dtpe) {
+                    dtpe.printStackTrace();
+                    Helper.showMsg("error");
+
+                }
+            }
+        });
+
+        btn_search_reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                roomSearchReset();
+            }
+        });
+
+
+        btn_reset.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                resetFormFields();
+
+            }
+
+            private void resetFormFields() {
+                // Text alanlarını temizle
+                txt_hotel_name.setText("");
+                txt_hotel_adres.setText("");
+                txt_hotel_city.setText("");
+                txt_hotel_mail.setText("");
+                txt_hotel_region.setText("");
+                txt_hotel_mpno.setText("");
+                txt_hotel_star.setText("");
+
+                resetPensionCheckboxes();
+
+                // Tesis özelliklerini temizle
+                chk_facility_park.setSelected(false);
+                chk_facility_wifi.setSelected(false);
+                chk_facility_pool.setSelected(false);
+                chk_facility_gym.setSelected(false);
+                chk_facility_hc.setSelected(false);
+                chk_facility_spa.setSelected(false);
+                chk_facility_room_service.setSelected(false);
+
+                loadHotelTable(null);
+            }
+
+            private void resetPensionCheckboxes() {
+                chk_tp.setSelected(false);
+                chk_yp.setSelected(false);
+                chk_just_bed.setSelected(false);
+                chk_ahfc.setSelected(false);
+                chk_hsd.setSelected(false);
+                chk_breakfast.setSelected(false);
+                chk_uhsd.setSelected(false);
+            }
+        });
 
 
     }
+
+    private void resetRoom() {
+        txt_room_bed_count.setText("");
+        txt_room_metre.setText("");
+        txt_room_price_adult.setText("");
+        txt_room_price_child.setText("");
+        txt_room_stock.setText("");
+        chk_room_tv_yes.setSelected(false);
+        chk_room_tv_no.setSelected(false);
+        chk_room_minibar_yes.setSelected(false);
+        chk_room_minibar_no.setSelected(false);
+        chk_room_game_yes.setSelected(false);
+        chk_room_game_no.setSelected(false);
+        chk_room_safe_yes.setSelected(false);
+        chk_room_safe_no.setSelected(false);
+        chk_room_projeks_yes.setSelected(false);
+        chk_room_projeks_no.setSelected(false);
+        cmb_room_type.setSelectedItem(null);
+        cmb_season_type.setSelectedItem(null);
+        cmb_room_hoteladd.setSelectedItem(null);
+        cmb_room_pension_type.setSelectedItem(null);
+
+    }
+
+    private void roomSearchReset() {
+        cmb_search_hotel_name.setSelectedItem(null);
+        cmb_search_city.setSelectedItem(null);
+
+    }
+
+    private void loadReservationComponent() {
+        this.tbl_room.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mousePressed(MouseEvent e) {
+                int selectedRow = tbl_room.rowAtPoint(e.getPoint());
+                tbl_room.setRowSelectionInterval(selectedRow, selectedRow);
+                if (SwingUtilities.isRightMouseButton(e)) {
+                    room_menu.show(tbl_room, e.getX(), e.getY());
+                }
+            }
+        });
+
+        this.room_menu = new JPopupMenu();
+        this.room_menu.add("Rezervasyon Yap").addActionListener(e -> {
+            int selectRoomId = this.getTableSelectedRow(this.tbl_room, 0);
+            Room selectedRoom = roomManager.getRoomById(selectRoomId);
+
+            Hotel selectedHotel = hotelManager.getHotelById(selectedRoom.getRoom_hotel_id());
+
+            String startDateStr = room_strt_date.getText();
+            String endDateStr = rıoom_fnsh_date.getText();
+
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            LocalDate startDate = LocalDate.parse(startDateStr, formatter);
+            LocalDate endDate = LocalDate.parse(endDateStr, formatter);
+
+            ReservationView reservationView = new ReservationView(selectedHotel, selectedRoom, startDate, endDate);
+            reservationView.addWindowListener(new WindowAdapter() {
+                @Override
+                public void windowClosed(WindowEvent e) {
+                    loadRoomTable(null);
+                    loadReservationTable(null);
+                }
+            });
+            reservationView.setVisible(true);
+        });
+
+
+    }
+
+
+
     private void loadFacilityAndPension(int hotelId) {
         Hotel hotel = hotelManager.getHotelById(hotelId);
         if (hotel != null) {
@@ -511,6 +744,18 @@ public class WorkerView extends Layout {
         }
 
         this.createTable(this.tmdl_hotel, this.tbl_hotel, col_hotel, hotelList);
+    }
+
+
+    public void loadReservationTable(ArrayList<Object[]> reservationList) {
+        this.col_reservation = new Object[]{"Reservation ID", "Reservation Room ID", "Reservation Customer Name", "Reservation Customer Contact", "Reservation Check In Date",
+                "Reservation Check Out Date", "Reservation Total Price", "Reservation Adult Count", "Reservation Child Count", "Reservation Customer Email", "Reservation Customer T.C.", "Reservation Customer Note"};
+
+        if (reservationList == null) {
+            reservationList = this.reservationManager.getForTable(this.col_reservation.length, this.reservationManager.findAll());
+        }
+
+        this.createTable(this.tmdl_reservation, this.tbl_reservation, col_reservation, reservationList);
     }
 
     private void loadCompenent() {
@@ -619,6 +864,14 @@ public class WorkerView extends Layout {
         pension.setPension_type_ahfc(chk_ahfc.isSelected());
         hotelManager.addPension(pension);
         return pension;
+    }
+
+
+    private void createUIComponents() throws ParseException {
+        this.room_strt_date = new JFormattedTextField(new MaskFormatter("##/##/####"));
+        this.room_strt_date.setText("10/10/2023");
+        this.rıoom_fnsh_date = new JFormattedTextField(new MaskFormatter("##/##/####"));
+        this.rıoom_fnsh_date.setText("16/10/2023");
     }
 
 

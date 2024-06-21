@@ -33,6 +33,15 @@ public class RoomManager {
         roomDao.delete(roomId);
     }
 
+    public ArrayList<String> getHotelCities(int hotelId) {
+        return roomDao.getHotelCities(hotelId);
+    }
+
+    public ArrayList<Room> searchRooms(String startDate, String endDate, String city, String hotelName) {
+        return roomDao.searchRooms(startDate, endDate, city, hotelName);
+    }
+
+
     public ArrayList<Object[]> getForTableRoom(int size, ArrayList<Room> rooms) {
         ArrayList<Object[]> roomList = new ArrayList<>();
         for (Room obj : rooms) {
@@ -66,5 +75,7 @@ public class RoomManager {
     public ArrayList<Hotel> getAllHotels() {
         return roomDao.getAllHotels();
     }
+
+
 
 }

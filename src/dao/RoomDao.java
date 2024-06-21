@@ -3,18 +3,20 @@ package dao;
 import core.Db;
 import entity.Hotel;
 import entity.Pension;
+import entity.Reservation;
 import entity.Room;
 
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 
 public class RoomDao {
     private Connection con;
 
-    public RoomDao(){
+    public RoomDao() {
         this.con = Db.getInstance();
     }
-
 
 
     public ArrayList<Room> findAll() {
@@ -62,6 +64,21 @@ public class RoomDao {
             e.printStackTrace();
         }
         return hotels;
+    }
+
+    public ArrayList<String> getHotelCities(int hotelId) {
+        ArrayList<String> cities = new ArrayList<>();
+        String query = "SELECT DISTINCT hotel_city FROM public.hotel WHERE hotel_id = ?";
+        try (PreparedStatement pr = con.prepareStatement(query)) {
+            pr.setInt(1, hotelId);
+            ResultSet rs = pr.executeQuery();
+            while (rs.next()) {
+                cities.add(rs.getString("hotel_city"));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return cities;
     }
 
 
@@ -174,7 +191,39 @@ public class RoomDao {
         }
     }
 
+    public ArrayList<Room> searchRooms(String startDate, String endDate, String city, String hotelName) {
+        ArrayList<Room> rooms = new ArrayList<>();
 
+        String query = "SELECT r.* FROM public.room r " +
+                "JOIN public.hotel h ON r.room_hotel_id = h.hotel_id " +
+                "LEFT JOIN public.reservation res ON r.room_id = res.reservation_room_id " +
+                "WHERE r.room_stock > 0 ";
+
+        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
+            query += "AND NOT EXISTS (SELECT 1 FROM public.reservation res " +
+                    "WHERE res.reservation_room_id = r.room_id " +
+                    "AND (res.reservation_check_in_date <= '" + endDate + "' " +
+                    "AND res.reservation_check_out_date >= '" + startDate + "')) ";
+        }
+
+        if (city != null && !city.isEmpty()) {
+            query += "AND h.hotel_city = '" + city + "' ";
+        }
+
+        if (hotelName != null && !hotelName.isEmpty()) {
+            query += "AND h.hotel_name = '" + hotelName + "' ";
+        }
+
+        try {
+            ResultSet rs = this.con.createStatement().executeQuery(query);
+            while (rs.next()) {
+                rooms.add(this.match(rs));
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return rooms;
+    }
 }
 
 
