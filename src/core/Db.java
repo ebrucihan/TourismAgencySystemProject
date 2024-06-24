@@ -14,7 +14,7 @@ public class Db {
     private final String DB_USERNAME = "postgres";
     private final String DB_PASS = "2108";
 
-    ////////ebru
+    ////////ebrucihan
 
     private Db() {
         try{
