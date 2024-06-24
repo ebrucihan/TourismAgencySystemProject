@@ -12,7 +12,8 @@ public class Db {
     private Connection connection = null;
     private final String DB_URL = "jdbc:postgresql://localhost:5432/tourismagencysystem";
     private final String DB_USERNAME = "postgres";
-    private final String DB_PASS = "0508";
+    private final String DB_PASS = "2108";
+
 
     private Db() {
         try{
