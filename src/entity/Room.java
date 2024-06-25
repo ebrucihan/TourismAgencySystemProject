@@ -5,22 +5,22 @@ import java.time.LocalDate;
 import java.util.StringJoiner;
 
 public class Room {
-    private int room_id;
-    private int room_hotel_id;
-    private Roomtype roomtype;
-    private double price_adult;
-    private double price_child;
-    private int room_stock;
-    private int room_bed_count;
-    private int room_square_meters;
-    private boolean room_tv;
-    private boolean room_minibar;
-    private boolean room_gameconsole;
-    private boolean room_safe;
-    private boolean room_projector;
-    private Seasontype room_season_type;
-    private Pensiontype room_pension_type;
-    private Hotel hotel;
+    private int room_id; // Oda ID'si
+    private int room_hotel_id; // Odaya ait otel ID'si
+    private Roomtype roomtype; // Oda tipi
+    private double price_adult; // Yetişkin fiyatı
+    private double price_child; // Çocuk fiyatı
+    private int room_stock; // Oda stok sayısı
+    private int room_bed_count; // Oda yatak sayısı
+    private int room_square_meters; // Oda metrekaresi
+    private boolean room_tv; // TV var mı?
+    private boolean room_minibar; // Minibar var mı?
+    private boolean room_gameconsole; // Oyun konsolu var mı?
+    private boolean room_safe; // Kasa var mı?
+    private boolean room_projector; // Projeksiyon var mı?
+    private Seasontype room_season_type; // Oda sezon tipi
+    private Pensiontype room_pension_type; // Oda pansiyon tipi
+    private Hotel hotel; // Odaya ait otel
 
 
     public enum Roomtype {

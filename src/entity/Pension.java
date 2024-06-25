@@ -1,15 +1,15 @@
 package entity;
 
 public class Pension {
-    private int pension_type_id;
-    private int pension_hotel_id;
-    private boolean pension_type_ultra;
-    private boolean pension_type_hsd;
-    private boolean pension_type_breakfast;
-    private boolean pension_type_tam;
-    private boolean pension_type_yarim;
-    private boolean pension_type_just_bed;
-    private boolean pension_type_ahfc;
+    private int pension_type_id; // Pansiyon tipi ID'si
+    private int pension_hotel_id; // Pansiyon tipine ait otel ID'si
+    private boolean pension_type_ultra; // Ultra Herşey Dahil
+    private boolean pension_type_hsd; // Herşey Dahil
+    private boolean pension_type_breakfast; // Yatak ve Kahvaltı
+    private boolean pension_type_tam; // Tam Pansiyon
+    private boolean pension_type_yarim; // Yarım Pansiyon
+    private boolean pension_type_just_bed; // Sadece Yatak
+    private boolean pension_type_ahfc; // Alkol Hariç Full Kredi
 
     public Pension() {
     }

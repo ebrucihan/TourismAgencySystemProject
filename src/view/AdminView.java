@@ -27,40 +27,40 @@ public class AdminView extends Layout {
     private Object[] col_user;
     private UserManager userManager;
 
+    // Admin ekranı oluşturulur.
     public AdminView(User user) {
-        this.userManager = new UserManager();
-        this.add(container);
-        this.guiInitilaze(1000, 500);
-        this.user = user;
+        this.userManager = new UserManager(); // Kullanıcı yönetim sınıfı oluşturulur.
+        this.add(container); // Ana konteyner eklenir.
+        this.guiInitilaze(1000, 500); // GUI başlatılır.
+        this.user = user; // Giriş yapan kullanıcı atanır.
         if (this.user == null) {
-            dispose();
+            dispose(); // Eğer kullanıcı yoksa pencere kapatılır.
         }
 
-        //General Code
-        loadCompenent();
+        // Genel Kodlar
+        loadCompenent(); // Component yüklenir.
 
+        // Kullanıcı Sekmesi
+        loadUserCompenent(); // Kullanıcı componentleri yüklenir.
+        loadUserTable(null); // Kullanıcı tablosu yüklenir.
+        loadUserFilter(); // Kullanıcı filtreleme yüklenir.
 
-        //User Tab Menu
-        loadUserCompenent();
-        loadUserTable(null);
-        loadUserFilter();
-
-        this.tbl_admin.setComponentPopupMenu(user_Menu);
+        this.tbl_admin.setComponentPopupMenu(user_Menu); // Tabloya sağ tıklama menüsü eklenir.
     }
 
+    // Genel componentleri yükler.
     private void loadCompenent(){
         // Çıkış butonuna tıklandığında, mevcut pencereyi kapatıp yeni bir giriş ekranı penceresi oluşturulur.
         btn_admin_logout.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                dispose();
+                dispose(); // Mevcut pencereyi kapatır.
                 LoginView loginView = new LoginView(); // Yeni bir giriş ekranı penceresi oluşturur.
-
             }
         });
     }
 
-    //User Tablo
+    // Kullanıcı tablosunu yükler.
     public void loadUserTable(ArrayList<Object[]> userList) {
         this.col_user = new Object[]{"ID", " İsim ", "Şifre", "Rol"};  // Kullanıcı tablosu sütun başlıkları tanımlanır.
         if (userList == null) {
@@ -69,21 +69,19 @@ public class AdminView extends Layout {
         createTable(this.tmdl_user, this.tbl_admin, col_user, userList);
     }
 
-
-    // User filtreleme
+    // Kullanıcı filtreleme seçeneklerini yükler.
     public void loadUserFilter() {
         this.cmb_type.removeAllItems(); // ComboBox'ı temizler.
 
         for (User.Role role : User.Role.values()) { // Tüm kullanıcı rollerini ComboBox'a ekler.
             this.cmb_type.addItem(role);
         }
-        this.cmb_type.setSelectedItem(null);
-
+        this.cmb_type.setSelectedItem(null); // Varsayılan olarak seçili olanı kaldırır.
     }
 
-
+    // Kullanıcı componentleri yükler.
     public void loadUserCompenent() {
-
+        // Kullanıcı tablosuna fare ile tıklanma olayını dinler.
         this.tbl_admin.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
@@ -95,6 +93,7 @@ public class AdminView extends Layout {
             }
         });
 
+        // Sağ tıklama menüsü için işlevler eklenir.
         this.user_Menu = new JPopupMenu();
         this.user_Menu.add("Yeni Kullanıcı Ekle").addActionListener(e -> {
             UserView userView = new UserView(new User());
@@ -104,7 +103,6 @@ public class AdminView extends Layout {
                     loadUserTable(null); // Yeni kullanıcı ekranı kapatıldığında tablo yeniden yüklenir.
                 }
             });
-
         });
         this.user_Menu.add("Kullanıcı Güncelle").addActionListener(e -> {
             int selectUserId = this.getTableSelectedRow(tbl_admin, 0);
@@ -113,29 +111,27 @@ public class AdminView extends Layout {
                 @Override
                 public void windowClosed(WindowEvent e) {
                     loadUserTable(null); // Kullanıcı güncelleme ekranı kapatıldığında tablo yeniden yüklenir.
-
                 }
             });
         });
-
         this.user_Menu.add("Kullanıcı Sil").addActionListener(e -> {
             if (Helper.confirm("sure")) { // Silme işlemi onaylanırsa devam edilir.
                 int selectUserId = this.getTableSelectedRow(tbl_admin, 0);
                 if (this.userManager.delete(selectUserId)) {
-                    Helper.showMsg("done");
+                    Helper.showMsg("done"); // İşlem başarılı mesajı gösterilir.
                     loadUserTable(null);  // Tablo yeniden yüklenir.
                 } else {
-                    Helper.showMsg("error");
+                    Helper.showMsg("error"); // İşlem hatası mesajı gösterilir.
                 }
             }
         });
 
         this.tbl_admin.setComponentPopupMenu(user_Menu);  // Tabloya sağ tıklama menüsü eklenir.
 
-        // Arama butonuna tıklanınca yapılacak işlemleri belirler.
+        // Arama butonuna tıklandığında yapılacak işlemler belirlenir.
         this.btn_admin_search.addActionListener(e -> {
-            User.Role selectedRole = (User.Role) cmb_type.getSelectedItem(); // Seçilen rolü alır.
-            int userId = 0;
+            User.Role selectedRole = (User.Role) cmb_type.getSelectedItem(); // Seçilen rol alınır.
+            int userId = 0; // Kullanıcı ID'si sıfırlanır.
             if (selectedRole != null) {
             }
             // Arama sonuçlarını tabloya yükler.
@@ -145,18 +141,16 @@ public class AdminView extends Layout {
             );
             ArrayList<Object[]> userRowListBySearch = this.userManager.getForTable(this.col_user.length, userListBySearch);
             loadUserTable(userRowListBySearch);
-
         });
-        // Sıfırlama butonuna tıklanınca yapılacak işlemleri belirler.
-        this.btn_admin_reset.addActionListener(e -> {
-            this.cmb_type.setSelectedItem(null);
-            loadUserTable(null);
 
+        // Sıfırlama butonuna tıklandığında yapılacak işlemler belirlenir.
+        this.btn_admin_reset.addActionListener(e -> {
+            this.cmb_type.setSelectedItem(null); // ComboBox seçimi sıfırlanır.
+            loadUserTable(null); // Kullanıcı tablosu yeniden yüklenir.
         });
     }
 
 }
-
 
 
 

@@ -1,10 +1,10 @@
 package entity;
 
 public class User {
-    private int id;
-    private String username;
-    private String password;
-    private Role role;
+    private int id; // Kullanıcı ID'si
+    private String username; // Kullanıcı adı
+    private String password; // Şifre
+    private Role role; // Kullanıcı rolü
 
     public User() {
     }

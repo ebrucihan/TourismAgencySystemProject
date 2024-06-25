@@ -11,20 +11,19 @@ import java.util.ArrayList;
 public class Layout extends JFrame {
 
     public void guiInitilaze(int width, int height) {
-        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-        this.setTitle("Turizm Acente Sistemi");
-        this.setSize(width, height);
-        this.setLocation(Helper.getLocationPoint("x", this.getSize()), Helper.getLocationPoint("y", this.getSize()));
-        this.setVisible(true);
+        this.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE); // Pencere kapatıldığında sadece bu pencerenin kapanmasını sağlar.
+        this.setTitle("Turizm Acente Sistemi"); // Pencere başlığı
+        this.setSize(width, height); // Pencere boyutu
+        this.setLocation(Helper.getLocationPoint("x", this.getSize()), Helper.getLocationPoint("y", this.getSize())); // Pencerenin konumu
+        this.setVisible(true); // Pencereyi görünür yapar.
     }
 
-
     public void createTable(DefaultTableModel model, JTable table, Object[] columns, ArrayList<Object[]> rows) {
-        model.setColumnIdentifiers(columns);
-        table.setModel(model);
-        table.getTableHeader().setReorderingAllowed(false);
-        table.getColumnModel().getColumn(0).setMaxWidth(75);
-        table.setEnabled(false);
+        model.setColumnIdentifiers(columns); // Tablo başlıklarını ayarlar
+        table.setModel(model); // Tabloya modeli set eder
+        table.getTableHeader().setReorderingAllowed(false); // Sütunların sırasının değiştirilmesine izin vermez
+        table.getColumnModel().getColumn(0).setMaxWidth(75); // İlk sütunun maksimum genişliğini ayarlar
+        table.setEnabled(false); // Tabloyu etkisiz hale getirir
 
 
         DefaultTableModel clearmodel = (DefaultTableModel) table.getModel();
@@ -38,24 +37,20 @@ public class Layout extends JFrame {
         for (Object[] row : rows){
             model.addRow(row);
         }
-
-
-
     }
 
     public int getTableSelectedRow(JTable table, int index){
         return Integer.parseInt(table.getValueAt(table.getSelectedRow(),index).toString());
     }
 
-    public void tableHotelRowSelected(JTable table,Runnable action) {
+    public void tableHotelRowSelected(JTable table, Runnable action) {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mousePressed(MouseEvent e) {
                 int selectedRow = table.rowAtPoint(e.getPoint());
-                table.setRowSelectionInterval(selectedRow, selectedRow);
-                action.run();
+                table.setRowSelectionInterval(selectedRow, selectedRow); // Fare tıklamasına göre satırı seçer
+                action.run(); // Belirtilen aksiyonu çalıştırır
             }
         });
     }
-
 }

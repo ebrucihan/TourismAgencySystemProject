@@ -2,10 +2,12 @@ package core;
 
 public class ComboItem {
 
+    // Kullanıcı adı, şifre ve rol bilgilerini tutan sınıf.
     private String username;
     private String password;
     private String role;
 
+    // Yapıcı metot, kullanıcı adı, şifre ve rol bilgilerini alır.
     public ComboItem(String username, String password, String role) {
         this.username = username;
         this.password = password;

@@ -1,15 +1,15 @@
 package entity;
 
 public class Facility {
-    private int facility_id;
-    private int facility_hotel_id;
-    private boolean facility_free_park;
-    private boolean facility_free_wifi;
-    private boolean facility_pool;
-    private boolean facility_gym;
-    private boolean facility_concierge;
-    private boolean facility_SPA;
-    private boolean facility_room_service;
+    private int facility_id; // Tesis özelliklerinin ID'si
+    private int facility_hotel_id; // Tesis özelliklerinin ait olduğu otelin ID'si
+    private boolean facility_free_park; // Ücretsiz otopark hizmeti
+    private boolean facility_free_wifi; // Ücretsiz WiFi hizmeti
+    private boolean facility_pool; // Yüzme havuzu mevcut mu?
+    private boolean facility_gym; // Fitness merkezi bulunuyor mu?
+    private boolean facility_concierge; // Otel görevlisi hizmeti mevcut mu?
+    private boolean facility_SPA; // SPA hizmeti sunuluyor mu?
+    private boolean facility_room_service; // 7/24 oda servisi mevcut mu?
 
     public Facility() {
     }

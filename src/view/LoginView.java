@@ -19,34 +19,32 @@ public class LoginView extends Layout {
     private final UserManager userManager;
 
 
+    // Giriş ekranı oluşturulur.
     public LoginView() {
+        this.userManager = new UserManager(); // Kullanıcı yönetim sınıfı oluşturulur.
+        this.add(container); // Ana konteyner eklenir.
+        this.guiInitilaze(400, 400); // GUI başlatılır.
 
-        this.userManager = new UserManager();
-        this.add(container);
-        this.guiInitilaze(400, 400);
-
-        // Giriş butonuna tıklanınca yapılacak işlemler belirlenir.
+        // Giriş butonuna tıklandığında yapılacak işlemler belirlenir.
         btn_login.addActionListener(e -> {
-            JTextField[] checkFieldList = {this.fld_username, this.fld_pass};
-            if (Helper.isFieldListEmpty(checkFieldList)) {
-                Helper.showMsg("fill");
+            JTextField[] checkFieldList = {this.fld_username, this.fld_pass}; // Kontrol edilecek alanlar listesi oluşturulur.
+            if (Helper.isFieldListEmpty(checkFieldList)) { // Alanların boş olup olmadığı kontrol edilir.
+                Helper.showMsg("fill"); // Boş alan uyarısı gösterilir.
             } else {
+                // Kullanıcı adı ve şifreyle giriş yapılır.
                 User loginUser = this.userManager.findByLogin(this.fld_username.getText(), new String(this.fld_pass.getPassword()));
-                if (loginUser == null) {
+                if (loginUser == null) { // Kullanıcı bulunamazsa uyarı gösterilir.
                     Helper.showMsg("notFound");
                 } else {
                     if (loginUser.getRole() == User.Role.ADMIN) {
-                        new AdminView(loginUser).setVisible(true);
+                        new AdminView(loginUser).setVisible(true); // Admin girişi yapılırsa AdminView açılır.
                     } else {
-                        new WorkerView(loginUser).setVisible(true);
+                        new WorkerView(loginUser).setVisible(true); // Diğer durumda WorkerView açılır.
                     }
-                    dispose();
+                    dispose(); // Mevcut pencere kapatılır.
                 }
             }
         });
-
     }
 }
-
-
 

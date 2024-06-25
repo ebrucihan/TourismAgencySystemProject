@@ -10,66 +10,72 @@ public class ReservationDao {
     private Connection con;
 
     public ReservationDao() {
-        this.con = Db.getInstance();
+        this.con = Db.getInstance(); // Veritabanı bağlantısı oluşturuluyor
     }
 
+    // Tüm rezervasyonları getirir
     public ArrayList<Reservation> findAll() {
         return this.selectByQuery("SELECT * FROM public.reservation ORDER BY reservation_id ASC");
     }
 
+    // Belirli bir sorguya göre rezervasyonları getirir
     public ArrayList<Reservation> selectByQuery(String query) {
         ArrayList<Reservation> reservations = new ArrayList<>();
         try {
             ResultSet rs = this.con.createStatement().executeQuery(query);
             while (rs.next()) {
-                reservations.add(this.match(rs));
+                reservations.add(this.match(rs)); // Rezervasyonlar eşleştiriliyor
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return reservations;
     }
 
+    // Belirli bir ID'ye sahip rezervasyonu getirir
     public Reservation findById(int roomId) {
         String query = "SELECT * FROM public.reservation WHERE reservation_id = ?";
         try (PreparedStatement pr = con.prepareStatement(query)) {
-            pr.setInt(1, roomId);
-            ResultSet rs = pr.executeQuery();
+            pr.setInt(1, roomId); // Parametre ayarlanıyor
+            ResultSet rs = pr.executeQuery(); // Sorgu çalıştırılıyor
             if (rs.next()) {
-                return match(rs);
+                return match(rs); // Rezervasyon eşleştiriliyor
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return null;
     }
 
+    // Belirli bir ID'ye sahip rezervasyonu getirir
     public Reservation getById(int id) {
         Reservation obj = null;
         String query = "SELECT * FROM public.reservation WHERE reservation_id = ?";
         try {
             PreparedStatement pr = con.prepareStatement(query);
-            pr.setInt(1, id);
-            ResultSet rs = pr.executeQuery();
-            if (rs.next()) obj = this.match(rs);
+            pr.setInt(1, id); // Parametre ayarlanıyor
+            ResultSet rs = pr.executeQuery(); // Sorgu çalıştırılıyor
+            if (rs.next()) obj = this.match(rs); // Rezervasyon eşleştiriliyor
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throwables.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return obj;
     }
 
+    // Oda stokunu günceller
     public boolean updateRoomStock(int roomId, int newStock) {
         String query = "UPDATE public.room SET room_stock = ? WHERE room_id = ?";
         try (PreparedStatement pr = con.prepareStatement(query)) {
-            pr.setInt(1, newStock);
+            pr.setInt(1, newStock); // Parametreler ayarlanıyor
             pr.setInt(2, roomId);
-            return pr.executeUpdate() > 0;
+            return pr.executeUpdate() > 0; // Sorgu çalıştırılıyor ve güncelleme başarılıysa true döndürülüyor
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return false;
     }
 
+    // ResultSet'ten rezervasyon nesnesi oluşturur
     public Reservation match(ResultSet rs) throws SQLException {
         Reservation reservation = new Reservation();
         reservation.setReservation_id(rs.getInt("reservation_id"));
@@ -85,9 +91,10 @@ public class ReservationDao {
         reservation.setReservation_customer_tc(rs.getString("reservation_customer_tc"));
         reservation.setReservation_customer_note(rs.getString("reservation_customer_note"));
 
-        return reservation;
+        return reservation; // Oluşturulan rezervasyon nesnesi döndürülüyor
     }
 
+    // Yeni bir rezervasyon kaydeder
     public int saveReservation(Reservation reservation) throws SQLException {
         String query = "INSERT INTO public.reservation (reservation_room_id, reservation_customer_name, " +
                 "reservation_customer_contact, reservation_check_in_date, reservation_check_out_date, reservation_total_price, " +
@@ -108,7 +115,7 @@ public class ReservationDao {
             stmt.setString(10, reservation.getReservation_customer_tc());
             stmt.setString(11, reservation.getReservation_customer_note());
 
-            int affectedRows = stmt.executeUpdate();
+            int affectedRows = stmt.executeUpdate(); // Sorgu çalıştırılıyor
             if (affectedRows > 0) {
                 // Yeni eklenen rezervasyonun ID'sini alın
                 java.sql.ResultSet generatedKeys = stmt.getGeneratedKeys();
@@ -122,9 +129,10 @@ public class ReservationDao {
                 throw new SQLException("Rezervasyon kaydedilemedi, hiçbir satır etkilenmedi.");
             }
         }
-        return reservationId;
+        return reservationId; // Oluşturulan rezervasyon ID'si döndürülüyor
     }
 
+    // Rezervasyonu günceller
     public boolean updateReservation(Reservation reservation) {
         String query = "UPDATE public.reservation SET reservation_room_id = ?, reservation_customer_name = ?, " +
                 "reservation_customer_contact = ?, reservation_check_in_date = ?, reservation_check_out_date = ?, " +
@@ -146,20 +154,21 @@ public class ReservationDao {
             pr.setString(11, reservation.getReservation_customer_note());
             pr.setInt(12, reservation.getReservation_id());
 
-            return pr.executeUpdate() > 0;
+            return pr.executeUpdate() > 0; // Sorgu çalıştırılıyor ve güncelleme başarılıysa true döndürülüyor
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
             return false;
         }
     }
 
+    // Belirli bir rezervasyonu siler
     public void deleteReservation(int reservationId) {
         String query = "DELETE FROM public.reservation WHERE reservation_id=?";
         try (PreparedStatement pr = con.prepareStatement(query)) {
-            pr.setInt(1, reservationId);
-            pr.executeUpdate();
+            pr.setInt(1, reservationId); // Parametre ayarlanıyor
+            pr.executeUpdate(); // Sorgu çalıştırılıyor
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
     }
 }
