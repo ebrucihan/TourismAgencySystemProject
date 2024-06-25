@@ -47,14 +47,24 @@ public class ReservationView extends Layout {
     private ReservationDao reservationDao;
     private JPopupMenu reservation_menu;
     private JTable tbl_reservation;
+    private Reservation existingReservation;
 
     public ReservationView(Hotel selectedHotel, Room selectedRoom, LocalDate startDate, LocalDate endDate) {
+        this(selectedHotel, selectedRoom, startDate, endDate, null);
+    }
+
+    public ReservationView(Hotel selectedHotel, Room selectedRoom, LocalDate startDate, LocalDate endDate, Reservation existingReservation) {
         super();
+        this.existingReservation = existingReservation;
         this.reservationManager = new ReservationManager();
         this.reservationDao = new ReservationDao();
-
         this.add(container);
         this.guiInitilaze(600, 650);
+
+
+        if (existingReservation != null) {
+            loadExistingReservationData(existingReservation);
+        }
 
         // Otel bilgilerini doldurma
         txt_rzr_hotelname.setText(selectedHotel.getHotel_name());
@@ -215,7 +225,6 @@ public class ReservationView extends Layout {
                     Helper.showMsg("Oda stoğu yetersiz!");
                 } catch (NumberFormatException ex) {
                     // Sayı formatı hatası
-                    Helper.showMsg("error");
                     Helper.showMsg("Lütfen geçerli bir sayı formatı giriniz.");
                 } catch (Exception ex) {
                     // Diğer hatalar
@@ -227,4 +236,17 @@ public class ReservationView extends Layout {
 
 
     }
+
+    // Varolan rezervasyon verilerini yükler
+    private void loadExistingReservationData(Reservation reservation) {
+        txt_rzr_customername.setText(reservation.getReservation_customer_name());
+        txt_rzr_customertel.setText(reservation.getReservation_customer_contact());
+        txt_rzr_customer_email.setText(reservation.getReservation_customer_email());
+        txt_rzr_customer_tc.setText(String.valueOf(reservation.getReservation_customer_tc()));
+        txt_rzr_customer_note.setText(reservation.getReservation_customer_note());
+        txt_rzr_totalprice.setText(String.valueOf(reservation.getReservation_total_price()));
+        txt_rzr_adultcount.setText(String.valueOf(reservation.getReservation_guest_count_adult()));
+        txt_rzr_childcount.setText(String.valueOf(reservation.getReservation_guest_count_child()));
+    }
+
 }

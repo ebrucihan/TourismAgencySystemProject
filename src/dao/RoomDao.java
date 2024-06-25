@@ -194,30 +194,50 @@ public class RoomDao {
     public ArrayList<Room> searchRooms(String startDate, String endDate, String city, String hotelName) {
         ArrayList<Room> rooms = new ArrayList<>();
 
-        String query = "SELECT r.* FROM public.room r " +
-                "JOIN public.hotel h ON r.room_hotel_id = h.hotel_id " +
-                "LEFT JOIN public.reservation res ON r.room_id = res.reservation_room_id " +
-                "WHERE r.room_stock > 0 ";
 
-        if (startDate != null && !startDate.isEmpty() && endDate != null && !endDate.isEmpty()) {
-            query += "AND NOT EXISTS (SELECT 1 FROM public.reservation res " +
-                    "WHERE res.reservation_room_id = r.room_id " +
-                    "AND (res.reservation_check_in_date <= '" + endDate + "' " +
-                    "AND res.reservation_check_out_date >= '" + startDate + "')) ";
-        }
+        String query = "WITH AvailableRoomCounts AS ( " +
+                "    SELECT r.room_id, r.room_stock + COUNT(res.reservation_id) AS available_stock " +
+                "    FROM public.room r " +
+                "    LEFT JOIN public.reservation res " +
+                "    ON r.room_id = res.reservation_room_id " +
+                "    AND (res.reservation_check_out_date < ?::DATE OR res.reservation_check_in_date > ?::DATE) " +
+                "    GROUP BY r.room_id " +
+                ") " +
+                "SELECT r.*, ar.available_stock " +
+                "FROM public.room r " +
+                "JOIN public.hotel h ON r.room_hotel_id = h.hotel_id " +
+                "JOIN AvailableRoomCounts ar ON r.room_id = ar.room_id " +
+                "WHERE ar.available_stock > 0 ";
 
         if (city != null && !city.isEmpty()) {
-            query += "AND h.hotel_city = '" + city + "' ";
+            query += "AND h.hotel_city = ? ";
         }
 
         if (hotelName != null && !hotelName.isEmpty()) {
-            query += "AND h.hotel_name = '" + hotelName + "' ";
+            query += "AND h.hotel_name = ? ";
         }
 
-        try {
-            ResultSet rs = this.con.createStatement().executeQuery(query);
+        query += "ORDER BY r.room_id ASC";
+
+        try (PreparedStatement pr = con.prepareStatement(query)) {
+            int paramIndex = 1;
+
+            pr.setString(paramIndex++, startDate);
+            pr.setString(paramIndex++, endDate);
+
+            if (city != null && !city.isEmpty()) {
+                pr.setString(paramIndex++, city);
+            }
+
+            if (hotelName != null && !hotelName.isEmpty()) {
+                pr.setString(paramIndex++, hotelName);
+            }
+
+            ResultSet rs = pr.executeQuery();
             while (rs.next()) {
-                rooms.add(this.match(rs));
+                Room room = this.match(rs);
+                room.setRoom_stock(rs.getInt("available_stock"));
+                rooms.add(room);
             }
         } catch (SQLException e) {
             e.printStackTrace();
@@ -225,8 +245,6 @@ public class RoomDao {
         return rooms;
     }
 }
-
-
 
 
 

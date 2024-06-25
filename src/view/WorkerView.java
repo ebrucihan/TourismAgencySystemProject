@@ -108,7 +108,7 @@ public class WorkerView extends Layout {
         this.roomManager = new RoomManager();
         this.reservationManager = new ReservationManager();
         this.add(container);
-        this.guiInitilaze(1200, 850);
+        this.guiInitilaze(1200, 720);
         this.setTitle("Turizm Acentesi");
 
         loadCompenent();
@@ -373,7 +373,7 @@ public class WorkerView extends Layout {
             calendar.setTime(checkOutDate);
             LocalDate endDate = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
 
-            ReservationView reservationView = new ReservationView(selectedHotel, selectedRoom, startDate, endDate);
+            ReservationView reservationView = new ReservationView(selectedHotel, selectedRoom, startDate, endDate,selectedReservation);
             reservationView.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
@@ -640,6 +640,7 @@ public class WorkerView extends Layout {
     private void roomSearchReset() {
         cmb_search_hotel_name.setSelectedItem(null);
         cmb_search_city.setSelectedItem(null);
+        loadRoomTable(null);
 
     }
 
@@ -791,6 +792,27 @@ public class WorkerView extends Layout {
                     hotelManager.addHotel(newHotel);
 
                     loadHotelTable(null);
+
+                    cmb_room_hoteladd.removeAllItems();
+                    ArrayList<Hotel> hotels = roomManager.getAllHotels();
+                    for (Hotel hotel : hotels) {
+                        cmb_room_hoteladd.addItem(hotel);
+                        cmb_search_hotel_name.addItem(hotel);
+                    }
+                    cmb_search_hotel_name.removeAllItems();
+
+                    cmb_search_hotel_name.addItemListener(new ItemListener() {
+                        @Override
+                        public void itemStateChanged(ItemEvent e) {
+                            if (e.getStateChange() == ItemEvent.SELECTED) {
+                                Hotel selectedHotel = (Hotel) cmb_search_hotel_name.getSelectedItem();
+                                if (selectedHotel != null) {
+                                    initializeHotelCityComboBox(selectedHotel.getHotel_id());
+                                }
+                            }
+                        }
+                    });
+
 
                     Helper.showMsg("done");
                 }
