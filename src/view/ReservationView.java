@@ -54,8 +54,8 @@ public class ReservationView extends Layout {
     }
 
     public ReservationView(Hotel selectedHotel, Room selectedRoom, LocalDate startDate, LocalDate endDate, Reservation existingReservation) {
-        super();
         this.existingReservation = existingReservation;
+        tbl_reservation = new JTable();
         this.reservationManager = new ReservationManager();
         this.reservationDao = new ReservationDao();
         this.add(container);
@@ -192,32 +192,47 @@ public class ReservationView extends Layout {
                     reservation.setReservation_customer_tc(customerTc);
                     reservation.setReservation_customer_note(customerNote);
 
-                    // Rezervasyonu kaydetme işlemi (Gerçek kaydetme işlemi)
-                    int reservationId = reservationDao.saveReservation(reservation); // Örnek olarak rezervasyonu kaydediyoruz ve ID'sini alıyoruz
+                    if (existingReservation != null) {
+                        // Mevcut rezervasyon, güncelle
+                        reservation.setReservation_id(existingReservation.getReservation_id());
+                        reservationDao.updateReservation(reservation);
 
-                    // Tabloya eklemek için yeni bir satır oluşturma
-                    Object[] newRow = {
-                            reservation.getReservation_id(),
-                            reservation.getReservation_room_id(),
-                            reservation.getReservation_customer_name(),
-                            reservation.getReservation_customer_contact(),
-                            reservation.getReservation_check_in_date(),
-                            reservation.getReservation_check_out_date(),
-                            reservation.getReservation_total_price(),
-                            reservation.getReservation_guest_count_adult(),
-                            reservation.getReservation_guest_count_child(),
-                            reservation.getReservation_customer_email(),
-                            reservation.getReservation_customer_tc(),
-                            reservation.getReservation_customer_note()
-                    };
+                        // Oda stok sayısını güncelle (eğer gerekliyse)
+                        int newStock = selectedRoom.getRoom_stock(); // Veya değişikliklere göre yeni stok belirleyin
+                        reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock);
 
-                    // Oda stok sayısını güncelle
-                    int newStock = selectedRoom.getRoom_stock() - 1;
-                    reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock);
+                        Helper.showMsg("done");
+                    } else {
+                        // Yeni rezervasyon, ekle
+                        int reservationId = reservationDao.saveReservation(reservation); // Örnek olarak rezervasyonu kaydediyoruz ve ID'sini alıyoruz
+                        reservation.setReservation_id(reservationId);
 
+                        // Oda stok sayısını güncelle
+                        int newStock = selectedRoom.getRoom_stock() - 1;
+                        reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock);
 
-                    // Başarılı mesajı
-                    Helper.showMsg("done");
+                        // Tabloya eklemek için yeni bir satır oluşturma
+                        Object[] newRow = {
+                                reservation.getReservation_id(),
+                                reservation.getReservation_room_id(),
+                                reservation.getReservation_customer_name(),
+                                reservation.getReservation_customer_contact(),
+                                reservation.getReservation_check_in_date(),
+                                reservation.getReservation_check_out_date(),
+                                reservation.getReservation_total_price(),
+                                reservation.getReservation_guest_count_adult(),
+                                reservation.getReservation_guest_count_child(),
+                                reservation.getReservation_customer_email(),
+                                reservation.getReservation_customer_tc(),
+                                reservation.getReservation_customer_note()
+                        };
+
+                        // Tabloya yeni satırı ekle
+                        DefaultTableModel model = (DefaultTableModel) tbl_reservation.getModel();
+                        model.addRow(newRow);
+
+                        Helper.showMsg("done");
+                    }
                     dispose();
                 } catch (IllegalStateException ex) {
                     // Oda stoğu hatası
@@ -233,9 +248,8 @@ public class ReservationView extends Layout {
                 }
             }
         });
-
-
     }
+
 
     // Varolan rezervasyon verilerini yükler
     private void loadExistingReservationData(Reservation reservation) {

@@ -9,7 +9,6 @@ import java.util.ArrayList;
 public class ReservationDao {
     private Connection con;
 
-
     public ReservationDao() {
         this.con = Db.getInstance();
     }
@@ -44,7 +43,6 @@ public class ReservationDao {
         }
         return null;
     }
-
 
     public Reservation getById(int id) {
         Reservation obj = null;
@@ -124,7 +122,6 @@ public class ReservationDao {
                 throw new SQLException("Rezervasyon kaydedilemedi, hiçbir satır etkilenmedi.");
             }
         }
-
         return reservationId;
     }
 
@@ -165,7 +162,4 @@ public class ReservationDao {
             e.printStackTrace();
         }
     }
-
-
-
 }

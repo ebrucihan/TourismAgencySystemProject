@@ -33,6 +33,7 @@ public class ReservationManager {
     }
 
 
+
     public Reservation getRoomById(int roomId) {
         return reservationDao.findById(roomId);
     }

@@ -31,33 +31,31 @@ public class Room {
     }
 
     public enum Seasontype {
-        SUMMER("'01/06/2021 - 01/12/2021'"),
-        WINTER("'01/01/2021 - 31/05/2021'");
+        WINTER("01/01/2021 - 01/06/2021"),
+        SUMMER("01/06/2021 - 01/12/2021");
 
-        private final String dateRange;
+        private String dateRange;
 
         Seasontype(String dateRange) {
             this.dateRange = dateRange;
         }
 
+        @Override
+        public String toString() {
+            return this.dateRange;
+        }
+
         public String getDateRange() {
-            return dateRange;
+            return this.dateRange;
         }
 
         public static Seasontype fromDateRange(String dateRange) {
-            for (Seasontype season : Seasontype.values()) {
-                if (season.dateRange.equals(dateRange)) {
-                    return season;
+            for (Seasontype type : values()) {
+                if (type.dateRange.equals(dateRange)) {
+                    return type;
                 }
             }
             throw new IllegalArgumentException("No enum constant with date range " + dateRange);
-        }
-
-        @Override
-        public String toString() {
-            return new StringJoiner(", ",  "[", "]")
-                    .add("'" + dateRange + "'")
-                    .toString();
         }
     }
 

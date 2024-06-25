@@ -187,6 +187,8 @@ public class WorkerView extends Layout {
             chk_room_projeks_no.setSelected(!(Boolean) tbl_room.getValueAt(selectedRow, 12));
 
 
+
+
             int hotelId = (int) tbl_room.getValueAt(selectedRow, 1);
             for (int i = 0; i < cmb_room_hoteladd.getItemCount(); i++) {
                 Hotel hotel = (Hotel) cmb_room_hoteladd.getItemAt(i);
@@ -198,9 +200,18 @@ public class WorkerView extends Layout {
 
             // Season type
             cmb_season_type.removeAllItems();
-            ArrayList<Room.Seasontype> seasons = roomManager.getAllSeasons();
-            for (Room.Seasontype season : seasons) {
+            for (Room.Seasontype season : Room.Seasontype.values()) {
                 cmb_season_type.addItem(season);
+            }
+
+
+
+            String seasonTypeStr = tbl_room.getValueAt(selectedRow, 13).toString().replaceAll("[\\[\\]\"]", "").trim();
+            try {
+                Room.Seasontype seasonType = Room.Seasontype.fromDateRange(seasonTypeStr);
+                cmb_season_type.setSelectedItem(seasonType);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid season type: " + seasonTypeStr);
             }
 
             // Pension type
