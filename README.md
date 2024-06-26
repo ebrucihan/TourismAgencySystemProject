@@ -99,7 +99,7 @@ Butonlar:
 - Ekle: Yeni oda bilgilerini ekler.
 - Sil: Seçili oda bilgisini siler.
 - Sıfırla: Giriş alanlarını sıfırlar.
-- 
+ 
 **Oda Bilgileri Tablosu**: Oda ID, Otel ID, Oda Tipi, Yetişkin Fiyatı, Çocuk Fiyatı, Oda Stok, Yatak Sayısı, Metrekare, TV, Oyun Konsolu, Projeksiyon, Minibar, Kasa, Dönem Başlangıcı, Dönem Bitişi, Pansiyon Tipi sütunları ile oda bilgilerini gösterir.
 
 **Oda Arama**:
@@ -139,7 +139,7 @@ Rezervasyon Listesi Tablosu:
 - Reservation Customer TC: Müşteri kimlik numarası.
 - Reservation Note: Rezervasyon notu.
 - Rezervasyon Güncelle ve Sil Menüsü: Seçili rezervasyon üzerinde güncelleme ve silme işlemleri yapılabilir.
-- 
+  
 Bu ekran, rezervasyon bilgilerini yönetmek için kullanılır. Mevcut rezervasyonları görüntülemek, güncellemek ve silmek için kullanılabilir. Kullanıcı, rezervasyon detaylarını tablo üzerinden inceleyebilir ve gerekli işlemleri gerçekleştirebilir.
 
 <img width="959" alt="worker4" src="https://github.com/ebrucihan/TourismAgencySystemProject/assets/164398353/c9e6f7dd-1956-4929-9565-b428728edcea">
