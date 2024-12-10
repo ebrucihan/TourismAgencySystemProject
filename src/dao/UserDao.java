@@ -13,7 +13,7 @@ public class UserDao {
     private final Connection con;
 
     public UserDao() {
-        this.con = Db.getInstance();
+        this.con = Db.getInstance(); // Veritabanı bağlantısı oluşturuluyor
     }
 
     // Belirli bir ID'ye sahip kullanıcıyı getirme işlemi
@@ -22,11 +22,11 @@ public class UserDao {
         String query = "SELECT * FROM public.user WHERE user_id = ?";
         try {
             PreparedStatement pr = con.prepareStatement(query);
-            pr.setInt(1, id);
-            ResultSet rs = pr.executeQuery();
-            if (rs.next()) obj = this.match(rs);
+            pr.setInt(1, id); // Parametre ayarlanıyor
+            ResultSet rs = pr.executeQuery(); // Sorgu çalıştırılıyor
+            if (rs.next()) obj = this.match(rs); // Sonuç eşleştiriliyor
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throwables.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return obj;
     }
@@ -39,10 +39,10 @@ public class UserDao {
         try {
             ResultSet rs = this.con.createStatement().executeQuery(sql);
             while (rs.next()){
-                userList.add(this.match(rs));
+                userList.add(this.match(rs)); // Kullanıcılar listeye ekleniyor
             }
         } catch (SQLException e){
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return userList;
     }
@@ -58,10 +58,10 @@ public class UserDao {
         try {
             ResultSet rs = this.con.createStatement().executeQuery(query);
             while (rs.next()) {
-                userList.add(this.match(rs));
+                userList.add(this.match(rs)); // Kullanıcılar listeye ekleniyor
             }
         }catch (SQLException throwable) {
-            throwable.printStackTrace();
+            throwable.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return userList;
     }
@@ -71,7 +71,7 @@ public class UserDao {
         User user = null;
         String query = "SELECT * FROM public.user WHERE user_name = ? AND user_pass = ?";
         try (PreparedStatement stmt = con.prepareStatement(query)) {
-            stmt.setString(1, username);
+            stmt.setString(1, username); // Parametreler ayarlanıyor
             stmt.setString(2, password);
             try (ResultSet rs = stmt.executeQuery()) {
                 if (rs.next()) {
@@ -84,7 +84,7 @@ public class UserDao {
                 }
             }
         } catch (SQLException e) {
-            e.printStackTrace();
+            e.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return user;
     }
@@ -94,10 +94,10 @@ public class UserDao {
         String query = "DELETE FROM public.user WHERE user_id = ?";
         try{
             PreparedStatement pr = con.prepareStatement(query);
-            pr.setInt(1,user_id);
-            return pr.executeUpdate() != -1;
+            pr.setInt(1,user_id); // Parametre ayarlanıyor
+            return pr.executeUpdate() != -1; // Sorgu çalıştırılıyor ve başarılıysa true döndürülüyor
         }catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throwables.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return true;
 
@@ -112,13 +112,13 @@ public class UserDao {
 
         try {
             PreparedStatement pr = con.prepareStatement(query);
-            pr.setString(1,user.getUsername());
+            pr.setString(1,user.getUsername()); // Parametreler ayarlanıyor
             pr.setString(2,user.getPassword());
             pr.setString(3,user.getRole().name());
-            pr.executeUpdate();
+            pr.executeUpdate(); // Sorgu çalıştırılıyor
             return true;
         }catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throwables.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return true;
     }
@@ -132,14 +132,14 @@ public class UserDao {
                 "WHERE user_id = ?";
         try {
             PreparedStatement pr = con.prepareStatement(query);
-            pr.setString(1, user.getUsername());
+            pr.setString(1, user.getUsername()); // Parametreler ayarlanıyor
             pr.setString(2, user.getPassword());
             pr.setString(3, user.getRole().name());
             pr.setInt(4, user.getId());
-            return pr.executeUpdate() != -1;
+            return pr.executeUpdate() != -1; // Sorgu çalıştırılıyor ve başarılıysa true döndürülüyor
 
         } catch (SQLException throwables) {
-            throwables.printStackTrace();
+            throwables.printStackTrace(); // SQL hatası durumunda hata mesajı yazdırılıyor
         }
         return false;
 

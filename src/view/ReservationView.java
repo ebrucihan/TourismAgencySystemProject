@@ -47,44 +47,55 @@ public class ReservationView extends Layout {
     private ReservationDao reservationDao;
     private JPopupMenu reservation_menu;
     private JTable tbl_reservation;
+    private Reservation existingReservation;
 
+    // Otel, oda, başlangıç ve bitiş tarihlerine göre rezervasyon görünümü oluşturulur.
     public ReservationView(Hotel selectedHotel, Room selectedRoom, LocalDate startDate, LocalDate endDate) {
-        super();
-        this.reservationManager = new ReservationManager();
-        this.reservationDao = new ReservationDao();
+        this(selectedHotel, selectedRoom, startDate, endDate, null); // Var olan rezervasyon için çağrı yapılır.
+    }
 
-        this.add(container);
-        this.guiInitilaze(600, 650);
+    // Otel, oda, başlangıç, bitiş tarihleri ve var olan rezervasyona göre rezervasyon görünümü oluşturulur.
+    public ReservationView(Hotel selectedHotel, Room selectedRoom, LocalDate startDate, LocalDate endDate, Reservation existingReservation) {
+        this.existingReservation = existingReservation; // Var olan rezervasyon atanır.
+        tbl_reservation = new JTable(); // Rezervasyon tablosu oluşturulur.
+        this.reservationManager = new ReservationManager(); // Rezervasyon yöneticisi oluşturulur.
+        this.reservationDao = new ReservationDao(); // Rezervasyon veri erişim nesnesi oluşturulur.
+        this.add(container); // Ana konteyner eklenir.
+        this.guiInitilaze(600, 650); // GUI başlatılır.
+
+        if (existingReservation != null) { // Eğer var olan rezervasyon null değilse
+            loadExistingReservationData(existingReservation); // Var olan rezervasyonun verilerini yükle
+        }
 
         // Otel bilgilerini doldurma
-        txt_rzr_hotelname.setText(selectedHotel.getHotel_name());
-        txt_rzr_hoteladres.setText(selectedHotel.getHotel_adress());
-        txt_rzr_hoteltel.setText(selectedHotel.getHotel_mpno());
-        txt_rzr_hoteltype.setText(selectedHotel.getFacility().toString());
+        txt_rzr_hotelname.setText(selectedHotel.getHotel_name()); // Otel adını doldur
+        txt_rzr_hoteladres.setText(selectedHotel.getHotel_adress()); // Otel adresini doldur
+        txt_rzr_hoteltel.setText(selectedHotel.getHotel_mpno()); // Otel telefon numarasını doldur
+        txt_rzr_hoteltype.setText(selectedHotel.getFacility().toString()); // Otel türünü doldur
 
         // Oda bilgilerini doldurma
-        txt_rzr_roomtype.setText(selectedRoom.getRoomtype().name());
-        txt_rzr_season.setText(selectedRoom.getRoom_season_type().toString());
-        txt_rzr_pensiontype.setText(selectedRoom.getRoom_pension_type().name());
-        txt_rzr_adultprice.setText(String.valueOf(selectedRoom.getPrice_adult()));
-        txt_rzr_pricechild.setText(String.valueOf(selectedRoom.getPrice_child()));
+        txt_rzr_roomtype.setText(selectedRoom.getRoomtype().name()); // Oda türünü doldur
+        txt_rzr_season.setText(selectedRoom.getRoom_season_type().toString()); // Sezon tipini doldur
+        txt_rzr_pensiontype.setText(selectedRoom.getRoom_pension_type().name()); // Pansiyon tipini doldur
+        txt_rzr_adultprice.setText(String.valueOf(selectedRoom.getPrice_adult())); // Yetişkin fiyatını doldur
+        txt_rzr_pricechild.setText(String.valueOf(selectedRoom.getPrice_child())); // Çocuk fiyatını doldur
 
         // Oda özelliklerini string olarak hazırlama
         StringBuilder roomFeatures = new StringBuilder();
 
-        if (selectedRoom.getRoom_tv()) {
+        if (selectedRoom.getRoom_tv()) { // TV varsa
             roomFeatures.append("TV, ");
         }
-        if (selectedRoom.getRoom_minibar()) {
+        if (selectedRoom.getRoom_minibar()) { // Minibar varsa
             roomFeatures.append("Minibar, ");
         }
-        if (selectedRoom.getRoom_gameconsole()) {
+        if (selectedRoom.getRoom_gameconsole()) { // Oyun konsolu varsa
             roomFeatures.append("Console, ");
         }
-        if (selectedRoom.getRoom_safe()) {
+        if (selectedRoom.getRoom_safe()) { // Kasa varsa
             roomFeatures.append("Safe, ");
         }
-        if (selectedRoom.getRoom_projector()) {
+        if (selectedRoom.getRoom_projector()) { // Projektör varsa
             roomFeatures.append("Projector, ");
         }
 
@@ -97,10 +108,10 @@ public class ReservationView extends Layout {
         txt_rzr_roomözellik.setText(" (" + roomFeatures.toString() + ")");
 
         // Tarih farkını hesaplama ve gün bilgisini doldurma
-        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate);
-        txt_rzr_day.setText(String.valueOf(daysBetween));
+        long daysBetween = ChronoUnit.DAYS.between(startDate, endDate); // Başlangıç ve bitiş tarihleri arasındaki gün sayısını hesapla
+        txt_rzr_day.setText(String.valueOf(daysBetween)); // Gün sayısını doldur
 
-
+        // Fiyatı hesapla butonuna tıklandığında yapılacak işlemler belirlenir.
         btn_rzr_calculate.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -129,13 +140,12 @@ public class ReservationView extends Layout {
                     // Toplam fiyatı fld_reservation_total_price textfield'ına yazdır
                     txt_rzr_totalprice.setText(String.format("%.2f", totalPrice));
                 } catch (NumberFormatException ex) {
-                    Helper.showMsg("error");
+                    Helper.showMsg("error"); // Sayı formatı hatası durumunda uyarı göster
                 }
             }
-
         });
 
-
+        // Kaydet butonuna tıklandığında yapılacak işlemler belirlenir.
         btn_rzr_save.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -152,7 +162,7 @@ public class ReservationView extends Layout {
                     // Gerekli alanların boş olup olmadığını kontrol etme
                     JTextField[] fieldList = {txt_rzr_customername, txt_rzr_customertel, txt_rzr_customer_email, txt_rzr_customer_tc};
                     if (Helper.isFieldListEmpty(fieldList)) {
-                        Helper.showMsg("fill");
+                        Helper.showMsg("fill"); // Boş alan uyarısı göster
                         return;
                     }
 
@@ -165,66 +175,88 @@ public class ReservationView extends Layout {
                     try {
                         stayDuration = Integer.parseInt(txt_rzr_day.getText().trim());
                     } catch (NumberFormatException ex) {
-                        Helper.showMsg("Lütfen geçerli bir gün sayısı giriniz.");
+                        Helper.showMsg("Lütfen geçerli bir gün sayısı giriniz."); // Geçersiz gün sayısı hatası durumunda uyarı göster
                         return;
                     }
 
-                    Reservation reservation = new Reservation();
-                    reservation.setReservation_room_id(selectedRoom.getRoom_id());
-                    reservation.setReservation_customer_name(customerName);
-                    reservation.setReservation_customer_contact(customerTel);
-                    reservation.setReservation_check_in_date(java.sql.Date.valueOf(startDate));
-                    reservation.setReservation_check_out_date(java.sql.Date.valueOf(endDate));
-                    reservation.setReservation_total_price(totalPrice);
-                    reservation.setReservation_guest_count_adult(adultCount);
-                    reservation.setReservation_guest_count_child(childCount);
-                    reservation.setReservation_customer_email(customerEmail);
-                    reservation.setReservation_customer_tc(customerTc);
-                    reservation.setReservation_customer_note(customerNote);
+                    Reservation reservation = new Reservation(); // Yeni rezervasyon nesnesi oluşturulur
+                    reservation.setReservation_room_id(selectedRoom.getRoom_id()); // Oda ID'si atanır
+                    reservation.setReservation_customer_name(customerName); // Müşteri adı atanır
+                    reservation.setReservation_customer_contact(customerTel); // Müşteri telefonu atanır
+                    reservation.setReservation_check_in_date(java.sql.Date.valueOf(startDate)); // Giriş tarihi atanır
+                    reservation.setReservation_check_out_date(java.sql.Date.valueOf(endDate)); // Çıkış tarihi atanır
+                    reservation.setReservation_total_price(totalPrice); // Toplam fiyat atanır
+                    reservation.setReservation_guest_count_adult(adultCount); // Yetişkin sayısı atanır
+                    reservation.setReservation_guest_count_child(childCount); // Çocuk sayısı atanır
+                    reservation.setReservation_customer_email(customerEmail); // Müşteri e-posta atanır
+                    reservation.setReservation_customer_tc(customerTc); // Müşteri TC kimlik numarası atanır
+                    reservation.setReservation_customer_note(customerNote); // Müşteri notu atanır
 
-                    // Rezervasyonu kaydetme işlemi (Gerçek kaydetme işlemi)
-                    int reservationId = reservationDao.saveReservation(reservation); // Örnek olarak rezervasyonu kaydediyoruz ve ID'sini alıyoruz
+                    if (existingReservation != null) { // Eğer var olan rezervasyon null değilse
+                        // Mevcut rezervasyon, güncelle
+                        reservation.setReservation_id(existingReservation.getReservation_id()); // Rezervasyon ID'si atanır
+                        reservationDao.updateReservation(reservation); // Rezervasyon güncellenir
 
-                    // Tabloya eklemek için yeni bir satır oluşturma
-                    Object[] newRow = {
-                            reservation.getReservation_id(),
-                            reservation.getReservation_room_id(),
-                            reservation.getReservation_customer_name(),
-                            reservation.getReservation_customer_contact(),
-                            reservation.getReservation_check_in_date(),
-                            reservation.getReservation_check_out_date(),
-                            reservation.getReservation_total_price(),
-                            reservation.getReservation_guest_count_adult(),
-                            reservation.getReservation_guest_count_child(),
-                            reservation.getReservation_customer_email(),
-                            reservation.getReservation_customer_tc(),
-                            reservation.getReservation_customer_note()
-                    };
+                        // Oda stok sayısını güncelle (eğer gerekliyse)
+                        int newStock = selectedRoom.getRoom_stock(); // Yeni stok sayısı atanır
+                        reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock); // Oda stok güncellemesi yapılır
 
-                    // Oda stok sayısını güncelle
-                    int newStock = selectedRoom.getRoom_stock() - 1;
-                    reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock);
+                        Helper.showMsg("done"); // İşlem tamamlandı mesajı gösterilir
+                    } else {
+                        // Yeni rezervasyon, ekle
+                        int reservationId = reservationDao.saveReservation(reservation); // Rezervasyon kaydedilir ve ID'si alınır
+                        reservation.setReservation_id(reservationId); // Rezervasyon ID'si atanır
 
+                        // Oda stok sayısını güncelle
+                        int newStock = selectedRoom.getRoom_stock() - 1; // Yeni stok sayısı belirlenir
+                        reservationManager.updateRoomStock(selectedRoom.getRoom_id(), newStock); // Oda stok güncellemesi yapılır
 
-                    // Başarılı mesajı
-                    Helper.showMsg("done");
-                    dispose();
+                        // Tabloya eklemek için yeni bir satır oluşturma
+                        Object[] newRow = {
+                                reservation.getReservation_id(),
+                                reservation.getReservation_room_id(),
+                                reservation.getReservation_customer_name(),
+                                reservation.getReservation_customer_contact(),
+                                reservation.getReservation_check_in_date(),
+                                reservation.getReservation_check_out_date(),
+                                reservation.getReservation_total_price(),
+                                reservation.getReservation_guest_count_adult(),
+                                reservation.getReservation_guest_count_child(),
+                                reservation.getReservation_customer_email(),
+                                reservation.getReservation_customer_tc(),
+                                reservation.getReservation_customer_note()
+                        };
+
+                        // Tabloya yeni satırı ekle
+                        DefaultTableModel model = (DefaultTableModel) tbl_reservation.getModel();
+                        model.addRow(newRow);
+
+                        Helper.showMsg("done"); // İşlem tamamlandı mesajı gösterilir
+                    }
+                    dispose(); // Mevcut pencere kapatılır
                 } catch (IllegalStateException ex) {
-                    // Oda stoğu hatası
-                    Helper.showMsg("error");
-                    Helper.showMsg("Oda stoğu yetersiz!");
+                    Helper.showMsg("error"); // Hata durumunda genel hata mesajı gösterilir
+                    Helper.showMsg("Oda stoğu yetersiz!"); // Oda stoğu yetersiz uyarısı gösterilir
                 } catch (NumberFormatException ex) {
-                    // Sayı formatı hatası
-                    Helper.showMsg("error");
-                    Helper.showMsg("Lütfen geçerli bir sayı formatı giriniz.");
+                    Helper.showMsg("Lütfen geçerli bir sayı formatı giriniz."); // Geçersiz sayı formatı hatası durumunda uyarı gösterilir
                 } catch (Exception ex) {
-                    // Diğer hatalar
-                    Helper.showMsg("error");
+                    Helper.showMsg("error"); // Hata durumunda genel hata mesajı gösterilir
                     ex.printStackTrace(); // Hatanın konsolda detaylı görüntülenmesi için
                 }
             }
         });
-
-
     }
+
+    // Var olan rezervasyon verilerini yükler
+    private void loadExistingReservationData(Reservation reservation) {
+        txt_rzr_customername.setText(reservation.getReservation_customer_name()); // Müşteri adını doldur
+        txt_rzr_customertel.setText(reservation.getReservation_customer_contact()); // Müşteri telefonunu doldur
+        txt_rzr_customer_email.setText(reservation.getReservation_customer_email()); // Müşteri e-postasını doldur
+        txt_rzr_customer_tc.setText(String.valueOf(reservation.getReservation_customer_tc())); // Müşteri TC kimlik numarasını doldur
+        txt_rzr_customer_note.setText(reservation.getReservation_customer_note()); // Müşteri notunu doldur
+        txt_rzr_totalprice.setText(String.valueOf(reservation.getReservation_total_price())); // Toplam fiyatı doldur
+        txt_rzr_adultcount.setText(String.valueOf(reservation.getReservation_guest_count_adult())); // Yetişkin sayısını doldur
+        txt_rzr_childcount.setText(String.valueOf(reservation.getReservation_guest_count_child())); // Çocuk sayısını doldur
+    }
+
 }

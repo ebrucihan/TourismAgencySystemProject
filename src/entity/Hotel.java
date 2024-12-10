@@ -3,18 +3,18 @@ package entity;
 import java.util.StringJoiner;
 
 public class Hotel {
-    private int hotel_id;
-    private String hotel_name;
-    private String hotel_adress;
-    private String hotel_city;
-    private String hotel_region;
-    private String hotel_mail;
-    private String hotel_mpno;
-    private String hotel_stars;
-    private int hotel_facility_id;
-    private int hotel_pension_type_id;
-    private Facility facility;
-    private Pension pension;
+    private int hotel_id; // Otel ID'si
+    private String hotel_name; // Otel adı
+    private String hotel_adress; // Otel adresi
+    private String hotel_city; // Otelin bulunduğu şehir
+    private String hotel_region; // Otelin bulunduğu bölge
+    private String hotel_mail; // Otel e-posta adresi
+    private String hotel_mpno; // Otel telefon numarası
+    private String hotel_stars; // Otelin yıldız sayısı
+    private int hotel_facility_id; // Otelin tesis özellikleri ID'si
+    private int hotel_pension_type_id; // Otelin pansiyon tipi ID'si
+    private Facility facility; // Otelin tesis özellikleri
+    private Pension pension; // Otelin pansiyon tipi
 
     // Yeni otel eklemek için uygun yapıcı
     public Hotel(String hotel_name, String hotel_adress, String hotel_city, String hotel_region, String hotel_mail, String hotel_mpno, String hotel_stars, int hotel_facility_id, int hotel_pension_type_id) {

@@ -108,9 +108,11 @@ public class WorkerView extends Layout {
         this.roomManager = new RoomManager();
         this.reservationManager = new ReservationManager();
         this.add(container);
-        this.guiInitilaze(1200, 850);
+        this.guiInitilaze(1200, 720);
         this.setTitle("Turizm Acentesi");
 
+
+        initializeComboBoxes();
         loadCompenent();
         loadHotelTable(null);
         // Add ListSelectionListener to the table
@@ -118,7 +120,6 @@ public class WorkerView extends Layout {
 
         //Room
         loadRoomCompenent();
-        initializeComboBoxes();
         loadRoomButton();
         loadRoomTable(null);
         tableHotelRowSelected(tbl_room, this::loadRoomCompenent);
@@ -198,9 +199,17 @@ public class WorkerView extends Layout {
 
             // Season type
             cmb_season_type.removeAllItems();
-            ArrayList<Room.Seasontype> seasons = roomManager.getAllSeasons();
-            for (Room.Seasontype season : seasons) {
+            for (Room.Seasontype season : Room.Seasontype.values()) {
                 cmb_season_type.addItem(season);
+            }
+
+
+            String seasonTypeStr = tbl_room.getValueAt(selectedRow, 13).toString().replaceAll("[\\[\\]\"]", "").trim();
+            try {
+                Room.Seasontype seasonType = Room.Seasontype.fromDateRange(seasonTypeStr);
+                cmb_season_type.setSelectedItem(seasonType);
+            } catch (IllegalArgumentException e) {
+                System.err.println("Invalid season type: " + seasonTypeStr);
             }
 
             // Pension type
@@ -281,8 +290,9 @@ public class WorkerView extends Layout {
 
     }
 
-    private void initializeComboBoxes() {
+    private void initializeHotelNameCombobox() {
         cmb_room_hoteladd.removeAllItems();
+        cmb_search_hotel_name.removeAllItems();
         ArrayList<Hotel> hotels = roomManager.getAllHotels();
         for (Hotel hotel : hotels) {
             cmb_room_hoteladd.addItem(hotel);
@@ -300,7 +310,12 @@ public class WorkerView extends Layout {
                 }
             }
         });
+    }
 
+    private void initializeComboBoxes() {
+
+
+        initializeHotelNameCombobox();
 
         // Room Type ComboBox
         for (Room.Roomtype roomType : Room.Roomtype.values()) {
@@ -373,7 +388,7 @@ public class WorkerView extends Layout {
             calendar.setTime(checkOutDate);
             LocalDate endDate = LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1, calendar.get(Calendar.DAY_OF_MONTH));
 
-            ReservationView reservationView = new ReservationView(selectedHotel, selectedRoom, startDate, endDate);
+            ReservationView reservationView = new ReservationView(selectedHotel, selectedRoom, startDate, endDate, selectedReservation);
             reservationView.addWindowListener(new WindowAdapter() {
                 @Override
                 public void windowClosed(WindowEvent e) {
@@ -425,7 +440,6 @@ public class WorkerView extends Layout {
     }
 
 
-
     private void loadRoomButton() {
         this.btn_room_add.addActionListener(new ActionListener() {
             @Override
@@ -458,6 +472,7 @@ public class WorkerView extends Layout {
 
                     if (success) {
                         loadRoomTable(null);
+                        resetRoom();
                         Helper.showMsg("done");
                     } else {
                         Helper.showMsg("error");
@@ -501,6 +516,7 @@ public class WorkerView extends Layout {
 
                     if (success) {
                         loadRoomTable(null);
+                        resetRoom();
                         Helper.showMsg("done");
                     } else {
                         Helper.showMsg("error");
@@ -518,6 +534,7 @@ public class WorkerView extends Layout {
                     int roomId = (int) tbl_room.getValueAt(selectedRow, 0);
                     roomManager.deleteRoom(roomId);
                     loadRoomTable(null);
+                    resetRoom();
                     Helper.showMsg("done");
                 }
 
@@ -573,44 +590,42 @@ public class WorkerView extends Layout {
             @Override
             public void actionPerformed(ActionEvent e) {
                 resetFormFields();
-
-            }
-
-            private void resetFormFields() {
-                // Text alanlarını temizle
-                txt_hotel_name.setText("");
-                txt_hotel_adres.setText("");
-                txt_hotel_city.setText("");
-                txt_hotel_mail.setText("");
-                txt_hotel_region.setText("");
-                txt_hotel_mpno.setText("");
-                txt_hotel_star.setText("");
-
-                resetPensionCheckboxes();
-
-                // Tesis özelliklerini temizle
-                chk_facility_park.setSelected(false);
-                chk_facility_wifi.setSelected(false);
-                chk_facility_pool.setSelected(false);
-                chk_facility_gym.setSelected(false);
-                chk_facility_hc.setSelected(false);
-                chk_facility_spa.setSelected(false);
-                chk_facility_room_service.setSelected(false);
-
                 loadHotelTable(null);
-            }
 
-            private void resetPensionCheckboxes() {
-                chk_tp.setSelected(false);
-                chk_yp.setSelected(false);
-                chk_just_bed.setSelected(false);
-                chk_ahfc.setSelected(false);
-                chk_hsd.setSelected(false);
-                chk_breakfast.setSelected(false);
-                chk_uhsd.setSelected(false);
             }
         });
 
+
+    }
+
+
+    private void resetFormFields() {
+        // Text alanlarını temizle
+        txt_hotel_name.setText("");
+        txt_hotel_adres.setText("");
+        txt_hotel_city.setText("");
+        txt_hotel_mail.setText("");
+        txt_hotel_region.setText("");
+        txt_hotel_mpno.setText("");
+        txt_hotel_star.setText("");
+
+
+        // Tesis özelliklerini temizle
+        chk_facility_park.setSelected(false);
+        chk_facility_wifi.setSelected(false);
+        chk_facility_pool.setSelected(false);
+        chk_facility_gym.setSelected(false);
+        chk_facility_hc.setSelected(false);
+        chk_facility_spa.setSelected(false);
+        chk_facility_room_service.setSelected(false);
+
+        chk_tp.setSelected(false);
+        chk_yp.setSelected(false);
+        chk_just_bed.setSelected(false);
+        chk_ahfc.setSelected(false);
+        chk_hsd.setSelected(false);
+        chk_breakfast.setSelected(false);
+        chk_uhsd.setSelected(false);
 
     }
 
@@ -640,6 +655,7 @@ public class WorkerView extends Layout {
     private void roomSearchReset() {
         cmb_search_hotel_name.setSelectedItem(null);
         cmb_search_city.setSelectedItem(null);
+        loadRoomTable(null);
 
     }
 
@@ -684,7 +700,6 @@ public class WorkerView extends Layout {
     }
 
 
-
     private void loadFacilityAndPension(int hotelId) {
         Hotel hotel = hotelManager.getHotelById(hotelId);
         if (hotel != null) {
@@ -726,15 +741,13 @@ public class WorkerView extends Layout {
     }
 
 
-    public void loadRoomTable(ArrayList<Object[]> roomList){
-        this.col_room = new Object[]{"Room ID", "Room Hotel ID", "Room Type", "Price Adult", "Price Child", "Room Stock", "Room Bed Count", "Room Square Meters", "Room Tv", "Room Minibar", "Room Gameconsole", "Room Safe", "Room Projector","Room Season Type","Room Pension Type"};
+    public void loadRoomTable(ArrayList<Object[]> roomList) {
+        this.col_room = new Object[]{"Room ID", "Room Hotel ID", "Room Type", "Price Adult", "Price Child", "Room Stock", "Room Bed Count", "Room Square Meters", "Room Tv", "Room Minibar", "Room Gameconsole", "Room Safe", "Room Projector", "Room Season Type", "Room Pension Type"};
         if (roomList == null) {
-            roomList = this.roomManager.getForTableRoom(this.col_room.length,this.roomManager.findAll());
+            roomList = this.roomManager.getForTableRoom(this.col_room.length, this.roomManager.findAll());
         }
-        this.createTable(this.tmdl_room,this.tbl_room,col_room,roomList);
+        this.createTable(this.tmdl_room, this.tbl_room, col_room, roomList);
     }
-
-
 
 
     public void loadHotelTable(ArrayList<Object[]> hotelList) {
@@ -791,7 +804,11 @@ public class WorkerView extends Layout {
                     hotelManager.addHotel(newHotel);
 
                     loadHotelTable(null);
-
+                    resetFormFields();
+                    initializeHotelNameCombobox();
+                    resetRoom();
+                    roomSearchReset();
+                    resetPensionCheckboxes();
                     Helper.showMsg("done");
                 }
             }
@@ -805,6 +822,11 @@ public class WorkerView extends Layout {
                     int hotelId = (int) tbl_hotel.getValueAt(selectedRow, 0);
                     hotelManager.deleteHotel(hotelId);
                     loadHotelTable(null);
+                    resetFormFields();
+                    initializeHotelNameCombobox();
+                    resetRoom();
+                    roomSearchReset();
+                    resetPensionCheckboxes();
                     Helper.showMsg("done");
                 }
             }
@@ -831,6 +853,11 @@ public class WorkerView extends Layout {
                     if (success) {
                         Helper.showMsg("done");
                         loadHotelTable(null);
+                        resetFormFields();
+                        initializeHotelNameCombobox();
+                        resetRoom();
+                        roomSearchReset();
+                        resetPensionCheckboxes();
                     } else {
                         Helper.showMsg("error");
                     }

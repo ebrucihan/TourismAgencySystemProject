@@ -4,18 +4,18 @@ import java.time.LocalDate;
 import java.util.Date;
 
 public class Reservation {
-    private int reservation_id;
-    private int reservation_room_id;
-    private String reservation_customer_name;
-    private String reservation_customer_contact;
-    private Date reservation_check_in_date;
-    private Date reservation_check_out_date;
-    private double reservation_total_price;
-    private int reservation_guest_count_adult;
-    private int reservation_guest_count_child;
-    private String reservation_customer_email;
-    private String reservation_customer_tc;
-    private String reservation_customer_note;
+    private int reservation_id; // Rezervasyon ID'si
+    private int reservation_room_id; // Rezervasyon yapılan oda ID'si
+    private String reservation_customer_name; // Rezervasyon yapan müşteri adı
+    private String reservation_customer_contact; // Rezervasyon yapan müşteri iletişim bilgisi
+    private Date reservation_check_in_date; // Giriş tarihi
+    private Date reservation_check_out_date; // Çıkış tarihi
+    private double reservation_total_price; // Toplam fiyat
+    private int reservation_guest_count_adult; // Yetişkin misafir sayısı
+    private int reservation_guest_count_child; // Çocuk misafir sayısı
+    private String reservation_customer_email; // Rezervasyon yapan müşteri e-posta adresi
+    private String reservation_customer_tc; // Rezervasyon yapan müşteri TC kimlik numarası
+    private String reservation_customer_note; // Rezervasyon notu
 
     public Reservation() {
     }
